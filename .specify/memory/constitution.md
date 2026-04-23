@@ -1,26 +1,25 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (none) → 1.0.0 (initial ratification)
+Version change: 1.0.0 → 1.1.0 (MINOR — new principle added, stale references fixed)
 
 Principles added:
-  I.   Deny by Default
-  II.  Zero Data Egress
-  III. FOSS Core Integrity
-  IV.  Future Compatibility
-  V.   Architectural Honesty
-  VI.  Test-Proven Correctness
+  VII. Three-Phase Strategy
 
-Sections added:
-  - Architecture Constraints
-  - Development Workflow
-  - Governance
+Principles modified:
+  IV.  Future Compatibility — roadmap reference updated from ARGOS_PRODUCT_VISION.md §5
+                              to docs/ROADMAP.md
+  V.   Architectural Honesty — "v0.5+" replaced with milestone ID M5
+
+Sections modified:
+  - Architecture Constraints — stale §7/§8 reference fixed, version numbers replaced
+    with milestone IDs (v0.4 → M4, v1.1 → M7)
 
 Templates updated:
-  ✅ .specify/templates/plan-template.md — Constitution Check gates filled in
-  ✅ CLAUDE.md — reference to constitution and plan added
-  ✅ .specify/templates/spec-template.md — §13 compatibility note added to Requirements
-  ✅ .specify/templates/tasks-template.md — no changes required (test discipline already present)
+  ✅ .specify/templates/plan-template.md — no changes required (gates still valid)
+  ✅ CLAUDE.md — no changes required
+  ✅ .specify/templates/spec-template.md — no changes required
+  ✅ .specify/templates/tasks-template.md — no changes required
 
 Deferred items: none
 -->
@@ -57,19 +56,18 @@ behind a paywall, a license-key feature flag, or a cloud dependency. The SaaS la
 MUST add only operational services — managed hosting, compliance report generation, threat intel
 feeds — never capabilities that belong in the runtime.
 
-**Rationale**: the FOSS-to-SaaS flywheel only works if the core is genuinely excellent and
-permanently free. Any encumbrance of the core destroys community trust and ends the flywheel.
-HashiCorp's BSL migration is the canonical anti-pattern to avoid.
+**Rationale**: the FOSS core must be genuinely excellent and permanently free. Any encumbrance
+destroys community trust and ends the flywheel. HashiCorp's BSL migration is the canonical
+anti-pattern to avoid.
 
 ### IV. Future Compatibility
 
-No implementation decision in v0.1 may foreclose a capability defined in
-`docs/product/ARGOS_PRODUCT_VISION.md` §5 (roadmap) without explicit acknowledgement of the
-tradeoff. The 10 constraints in `docs/product/ARGOS_V01_IDEA.md` §13 are binding architectural
-requirements. Every spec and plan MUST include a compatibility constraint validation pass before
-implementation begins.
+No implementation decision in M1 may foreclose a capability defined in `docs/ROADMAP.md` without
+explicit acknowledgement of the tradeoff. The 10 constraints in `docs/product/ARGOS_V01_IDEA.md`
+§13 are binding architectural requirements. Every spec and plan MUST include a compatibility
+constraint validation pass before implementation begins.
 
-**Rationale**: architectural debt incurred in v0.1 compounds. The 10 constraints are the minimum
+**Rationale**: architectural debt incurred in M1 compounds. The 10 constraints are the minimum
 set that keeps all roadmap doors open without rewrites.
 
 ### V. Architectural Honesty
@@ -77,7 +75,7 @@ set that keeps all roadmap doors open without rewrites.
 Argos is a capability enforcer, not a probabilistic guardrail, AI safety system, or injection
 detector. Technical claims MUST be accurate and defensible. "Enforces capability policies at the
 transport layer" is true. "Prevents prompt injection" is not — and must never appear in
-documentation or marketing. Defence-in-depth features (v0.5+) MUST be positioned as additional
+documentation or marketing. Defence-in-depth features (M5+) MUST be positioned as additional
 layers, never as the primary value proposition.
 
 **Rationale**: false security claims are a trust liability. The target customer (AppSec engineer)
@@ -93,7 +91,7 @@ any agent platform precisely because it competes with none of them. See
 ### VI. Test-Proven Correctness
 
 For a security product, correctness is existential. All policy evaluation logic, Merkle chain
-integrity, and proxy transport flow paths MUST have automated tests before any v0.1 success
+integrity, and proxy transport flow paths MUST have automated tests before any M1 success
 criterion is claimed as met. Required minimum coverage:
 
 - Unit tests: policy engine (allow/block/redact decisions, rule ordering, wildcard matching)
@@ -103,29 +101,48 @@ criterion is claimed as met. Required minimum coverage:
 
 No security-critical path ships without tests.
 
+### VII. Three-Phase Strategy
+
+Product decisions MUST be evaluated against the three-phase sequencing defined in
+`docs/ROADMAP.md`: **Standard** (FOSS proxy, M1–M6) → **Moat** (Argos OS, OS1–OS2) →
+**Revenue** (SaaS, M7–M9). The OS phase precedes the SaaS phase — this is non-negotiable.
+
+Specifically:
+- Features that belong in M7–M9 (SaaS) MUST NOT be built before OS1 is underway.
+- Nothing in M1–M6 may be designed in a way that forecloses OS-layer integration.
+- The funding bridge between M6 and OS1 is grants (NLnet, Sovereign Tech Fund, EU Horizon AI),
+  not SaaS revenue. Decisions that require SaaS revenue to reach the OS phase are architectural
+  mistakes.
+
+**Rationale**: a solo founder cannot outspend incumbents on SaaS features. The OS +
+data/instruction separation is the only defensible long-term moat — a multi-year research bet
+that large vendors will not take. Deep focus compounds on the hard problem. SaaS built on top of
+the OS launches differentiated; SaaS built before the OS races incumbents on compliance
+dashboards and loses.
+
 ## Architecture Constraints
 
 - The primary deliverable is a single Rust binary (`argos-proxy`) with no runtime dependencies.
 - The `argos` crate MUST be buildable as both `[[bin]]` and `[lib]` in a single Cargo workspace.
   The policy engine and audit writer MUST be exposed as public library APIs.
-- Async runtime: Tokio. No alternatives evaluated for v0.1.
+- Async runtime: Tokio. No alternatives evaluated for M1.
 - Policy format: TOML with mandatory `version` field validated at load time. Unrecognised versions
   produce a hard error, not a warning.
 - Audit log: JSONL, SHA-256 Merkle-chained. The hash function MUST NOT be changed — Sigstore/Rekor
-  compatibility in v0.4 depends on SHA-256 specifically.
+  compatibility (M4) depends on SHA-256 specifically.
 - Session IDs: UUID v4, generated once per proxy invocation.
 - HTTP/SSE mode: MUST accept TLS certificate configuration at the CLI level even if mTLS is not
-  enforced in v0.1. Retrofitting TLS config later is a breaking change.
-- Audit log schema: MUST include `org_id` and `tenant_id` fields (nullable in v0.1) and a
-  `rotation_marker` entry type (not emitted in v0.1). Omitting them from the schema forecloses
-  SaaS multi-tenancy and v1.0 log rotation.
-- Policy rules: MUST carry a `tags` field (empty array acceptable in v0.1). Required for v1.1
-  compliance report template mapping.
+  enforced in M1. Retrofitting TLS config later is a breaking change.
+- Audit log schema: MUST include `org_id` and `tenant_id` fields (nullable in M1) and a
+  `rotation_marker` entry type (not emitted in M1). Omitting them forecloses SaaS multi-tenancy
+  (M7) and stable-API log rotation (M6).
+- Policy rules: MUST carry a `tags` field (empty array acceptable in M1). Required for compliance
+  report template mapping (M8).
 
-The long-term platform direction (v3.0+ horizon) is a purpose-built OS for AI agent execution,
-where enforcement moves below the application layer. Nothing in the proxy architecture should
-foreclose OS-level integration — the library crate requirement already supports this trajectory.
-See `docs/product/ARGOS_PRODUCT_VISION.md` §7 for the full rationale.
+The long-term platform direction is a purpose-built OS for AI agent execution (OS1–OS2), where
+enforcement moves below the application layer. Nothing in the proxy architecture should foreclose
+OS-level integration — the library crate requirement already supports this trajectory. See
+`docs/product/ARGOS_PRODUCT_VISION.md` §8 for the full technical rationale.
 
 ## Development Workflow
 
@@ -139,6 +156,8 @@ See `docs/product/ARGOS_PRODUCT_VISION.md` §7 for the full rationale.
   `docs/product/ARGOS_V01_IDEA.md` §13 before implementation begins.
 - Security-critical paths (policy engine, audit writer, transport adapters) require self-review
   against Principles I, II, V, and VI before any PR is considered complete.
+- Milestone status is tracked in `docs/ROADMAP.md` — the single source of truth for sequencing
+  and current progress.
 
 ## Governance
 
@@ -152,5 +171,6 @@ This constitution supersedes all other project practices when conflicts arise. A
 
 Use `CLAUDE.md` for runtime development guidance (read by the AI assistant on every session).
 Use `docs/product/` for product strategy and vision documents.
+Use `docs/ROADMAP.md` for milestone sequencing and current status.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-23
+**Version**: 1.1.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-23
