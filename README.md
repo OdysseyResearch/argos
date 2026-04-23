@@ -1,5 +1,9 @@
 # Argos
 
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-pre--release-orange.svg)]()
+[![Built with Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org/)
+
 **Open-source MCP security proxy. Enforce capability policies on AI agents. Produce
 tamper-evident audit trails. Zero data egress.**
 
@@ -88,6 +92,20 @@ reason = "Default deny — tool not in policy"
 
 Single binary, no runtime dependencies, sub-millisecond overhead, memory safety without a GC.
 A security tool that adds attack surface or runtime complexity is a liability. Argos adds neither.
+
+## Contributing
+
+Argos is in early development. Contributions, feedback, and security research are welcome.
+
+- **Bug reports and feature requests**: [open an issue](https://github.com/ogil109/argos/issues)
+- **Security vulnerabilities**: please do not open a public issue — see [SECURITY.md](SECURITY.md)
+  (coming soon)
+- **Pull requests**: please open an issue first to discuss the change
+
+## Support
+
+Open an issue on [GitHub](https://github.com/ogil109/argos/issues) for questions, bugs, or
+discussion. There is no mailing list or chat yet — that comes with community growth.
 
 ## License
 
