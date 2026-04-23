@@ -13,8 +13,6 @@ MCP Client → argos-proxy → MCP Server
           audit.jsonl (Merkle-chained)
 ```
 
----
-
 ## The problem
 
 Every serious AI agent deployment uses MCP to connect language models to tools — filesystems,
@@ -34,8 +32,8 @@ Argos is a transparent proxy that sits between any MCP client and any MCP server
 incoming tool call it:
 
 1. Evaluates the call against a TOML policy spec
-2. **Allows**, **blocks**, or **redacts** based on the policy decision
-3. Writes the decision to an append-only, Merkle-chained audit log
+1. **Allows**, **blocks**, or **redacts** based on the policy decision
+1. Writes the decision to an append-only, Merkle-chained audit log
 
 Default posture: **deny by default**. Any tool call not explicitly permitted is blocked.
 
@@ -50,6 +48,34 @@ layer — a control that is architectural, not statistical.
 
 It is also not an agent platform, orchestrator, or tool runtime. It secures whatever agent
 platform you already use.
+
+## Prerequisites
+
+**To use Argos:**
+
+- [Rust](https://rustup.rs/) stable 1.91.1 or later
+
+**To contribute:**
+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) — Python package manager
+- [just](https://github.com/casey/just) — task runner (`cargo install just --version 1.50.0`)
+
+## Installation
+
+> **Pre-release.** No binary releases yet. Build from source:
+
+```bash
+cargo build --release
+# Binary at: target/release/argos-proxy
+```
+
+Releases will be available at [github.com/ogil109/argos/releases](https://github.com/ogil109/argos/releases).
+
+## Usage
+
+> **Pre-release.** Full usage documentation ships with M1.
+
+See [**ROADMAP.md**](docs/ROADMAP.md) for the milestone plan and what is being built now.
 
 ## Policy example
 
@@ -75,13 +101,6 @@ action = "block"
 reason = "Default deny — tool not in policy"
 ```
 
-## Status
-
-> **Pre-release.** Argos is under active development. M1 (MCP proxy MVP) is being built now.
-> Star the repo to follow progress.
-
-See [**ROADMAP.md**](docs/ROADMAP.md) for the full milestone plan and sequencing rationale.
-
 ## Why Rust
 
 Single binary, no runtime dependencies, sub-millisecond overhead, memory safety without a GC.
@@ -91,9 +110,18 @@ A security tool that adds attack surface or runtime complexity is a liability. A
 
 Argos is in early development. Contributions, feedback, and security research are welcome.
 
+**Development setup:**
+
+```bash
+cargo install just --version 1.50.0
+just setup   # installs all dev dependencies and git hooks
+just --list  # see available recipes
+```
+
+**How to contribute:**
+
 - **Bug reports and feature requests**: [open an issue](https://github.com/ogil109/argos/issues)
 - **Security vulnerabilities**: please do not open a public issue — see [SECURITY.md](SECURITY.md)
-  (coming soon)
 - **Pull requests**: please open an issue first to discuss the change
 
 ## Support
@@ -107,5 +135,3 @@ AGPL-3.0 — permanently free and open source. See [LICENSE](LICENSE).
 
 If you need to embed or deploy Argos without the AGPL obligations (e.g. in a proprietary
 product), a commercial license is available — open an issue to discuss.
-
----
