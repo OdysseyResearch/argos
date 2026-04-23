@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.1.1
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  - repo: local
+    hooks:
+      - id: claude-sensitive-data-check
+        name: Check for sensitive data (Claude)
+        entry: scripts/check-sensitive-data.sh
+        language: script
+        files: ^(docs/|\.claude/|\.specify/)
+        stages: [pre-commit]
