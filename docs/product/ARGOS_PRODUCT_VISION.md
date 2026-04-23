@@ -326,19 +326,32 @@ SaaS revenue funds deeper FOSS development → better FOSS → more adoption
 
 ---
 
-## 5. Product roadmap (version milestones)
+## 5. Product roadmap
 
-| Version | Milestone | Key capability added | Business model stage |
-|---|---|---|---|
-| **v0.1** | MCP proxy MVP | stdio + HTTP/SSE proxy, TOML policy, deny-by-default, Merkle audit log | FOSS foundation — earn community trust |
-| **v0.2** | Policy DSL v1 | Richer constraint expressions, wildcard tool matching, rule priorities resolved | FOSS growth — developer adoption |
-| **v0.3** | Framework integrations | Native LangChain, AutoGen, OpenAI Agents SDK plugins | FOSS expansion — Segment 3 adoption |
-| **v0.4** | Observability | OpenTelemetry GenAI span emission, Sigstore/Rekor anchoring option | FOSS maturity — enterprise-readiness |
-| **v0.5** | Defence-in-depth | Prompt injection pattern detection layer (statistical, not probabilistic guardrail) | FOSS — honest defence-in-depth |
-| **v1.0** | Production-ready | Multi-agent session management, policy hot-reload, mTLS, performance benchmarks | FOSS 1.0 — enterprise deployable |
-| **v1.1** | Argos Cloud alpha | Policy console, basic compliance reports, approval workflows | SaaS — first revenue |
-| **v1.2** | Compliance reports | EU AI Act, NIST AI RMF, ISO 42001 templates; SIEM integration | SaaS — CISO value unlocked |
-| **v2.0** | Threat intel | Proprietary MCP attack pattern feed, automated policy suggestions | SaaS — defensible moat |
+Version numbers follow SemVer strictly — majors bump on breaking changes to the policy format,
+CLI interface, audit log schema, or library API; they are not pinned to milestones. The one
+intentional marker is **Stable API** (0.x → 1.0.0), which signals that public interfaces are
+committed and production-safe. All other milestones ship at whatever version the changelog
+dictates.
+
+| ID | Milestone | Key capability | Business model stage |
+| -- | --------- | -------------- | -------------------- |
+| M1 | **MCP Proxy MVP** | stdio + HTTP/SSE proxy, TOML policy, deny-by-default, Merkle audit log | FOSS foundation — earn community trust |
+| M2 | **Policy DSL** | Richer constraint expressions, wildcard tool matching, rule priority resolution | FOSS growth — developer adoption |
+| M3 | **Framework integrations** | Native LangChain, AutoGen, OpenAI Agents SDK plugins | FOSS expansion — Segment 3 adoption |
+| M4 | **Observability** | OpenTelemetry GenAI span emission, Sigstore/Rekor anchoring option | FOSS maturity — enterprise-readiness |
+| M5 | **Defence-in-depth** | Structural anomaly detection (response size, capability drift, output structure) + known MCP attack pattern signatures. Defence-in-depth layer — not a prevention claim | FOSS — honest defence-in-depth |
+| M6 | **Stable API** *(0.x → 1.0.0)* | Multi-agent session management, policy hot-reload, mTLS, performance benchmarks. Public interfaces declared stable | FOSS 1.0 — enterprise deployable |
+| M7 | **Argos Cloud alpha** | Policy console, basic compliance reports, approval workflows | SaaS — first revenue |
+| M8 | **Compliance reports** | EU AI Act, NIST AI RMF, ISO 42001 templates; SIEM integration | SaaS — CISO value unlocked |
+| M9 | **Threat intel** | Proprietary MCP attack pattern feed, automated policy suggestions | SaaS — defensible moat |
+
+### Argos OS (separate product line)
+
+The OS is not a milestone of the proxy — it is a separate product that shares the policy engine
+and enforcement philosophy as a common core. It becomes viable once the proxy has established
+community credibility and distribution. See §8 for the full rationale and the data/instruction
+separation research direction that the OS enables.
 
 ---
 
@@ -389,31 +402,61 @@ The right answer is "Argos should enforce the security boundary around X, whatev
 
 ---
 
-## 8. Long-term platform direction
+## 8. Long-term platform direction — Argos OS
 
-The proxy-first roadmap (v0.1–v2.0) establishes Argos as the standard for MCP runtime security.
-The logical long-term extension is a purpose-built OS for AI agent execution.
+The M1–M9 proxy roadmap establishes Argos as the standard for MCP runtime security. The logical
+long-term extension is a purpose-built OS for AI agent execution — a separate product line, not
+a version of the proxy.
 
-**The argument**: a userspace proxy, however well-designed, can be bypassed by a sufficiently
-compromised agent — one with elevated privileges could circumvent the proxy, write directly to the
-network, or tamper with audit logs stored on the same filesystem. An OS purpose-built for AI agent
-workloads closes those attack vectors by pushing enforcement below the application layer: into the
-kernel, the scheduler, and ideally hardware-rooted trust (TPM, secure boot). Tamper-evidence
-becomes structural rather than cryptographic convention.
+**Why the proxy hits a ceiling**: a userspace proxy can be bypassed by a sufficiently compromised
+agent — one with elevated privileges could circumvent the proxy, write directly to the network,
+or tamper with audit logs on the same filesystem. An OS closes those attack vectors by pushing
+enforcement below the application layer: into the kernel, the scheduler, and hardware-rooted
+trust (TPM, secure boot). Tamper-evidence becomes structural rather than cryptographic convention.
 
 **The precedent**: Bottlerocket (AWS) and Talos Linux demonstrate that purpose-built OS
 distributions for specific runtime security concerns are viable and valued in enterprise
 infrastructure. An "AI agent execution OS" is a coherent product category that does not yet exist.
 
-**The sequencing**: this is a v3.0+ horizon, not a near-term distraction. The proxy must win the
-community and establish the standard first — that earns the credibility and the distribution
-channel to make an OS adoption story possible. Attempting both simultaneously would compromise
-both. The proxy is the wedge; the OS is the long-term defensible moat.
+**The sequencing**: the proxy must win the community and establish the standard first — that earns
+the credibility and distribution to make an OS adoption story possible. The proxy is the wedge;
+the OS is the long-term defensible moat.
 
-**Architectural implication for early decisions**: nothing in v0.1–v2.0 should be designed in a
-way that makes OS-layer integration impossible. The library crate requirement (Principle IV,
-constraint 6) already supports this — the policy engine embedded in an OS-level enforcement
-daemon is a natural evolution of the same codebase.
+**Architectural implication**: nothing in the proxy roadmap should foreclose OS-layer integration.
+The library crate requirement (constitution Principle IV, constraint 6) already supports this —
+the policy engine embedded in an OS-level enforcement daemon is a natural evolution of the same
+codebase.
+
+### Data/instruction separation — the hard problem the OS unlocks
+
+The fundamental vulnerability of MCP-connected agents is unified context: the model receives a
+single token stream with no intrinsic way to distinguish user instructions from tool output from
+adversarial payload. Filtering cannot fix this — the channel is unified by design.
+
+An OS-level solution can enforce separation *before* content reaches the model:
+
+**Memory tagging / taint tracking**: tag every byte of data with its provenance
+(`TRUSTED_INSTRUCTION`, `USER_INPUT`, `TOOL_OUTPUT`, `EXTERNAL_CONTENT`) and maintain those tags
+through the entire pipeline. When a `TOOL_OUTPUT`-tagged token appears in an instruction position,
+that is a structural violation — flag or block it before the model processes it. ARM MTE makes
+this viable in hardware.
+
+**Dual-channel context construction**: enforce two separate channels into the model runtime — a
+signed instruction channel and an untrusted data channel. The runtime treats data-channel tokens
+as data regardless of content. Requires cooperation from the inference runtime (llama.cpp, vLLM)
+but is architecturally sound — it mirrors CPU code/data segment separation.
+
+**Immutable instruction manifests**: at session start, the instruction set is cryptographically
+committed and locked. Any attempt to inject instructions mid-session is detectable as a manifest
+violation, not a model judgement call.
+
+**Capability-sealed tool outputs**: tool outputs are delivered in OS-enforced sealed envelopes.
+Nothing from a tool output can appear in the instruction prefix of the context. The model sees
+tags that are structurally enforced, not convention.
+
+The honest claim this enables: *Argos OS enforces structural separation of instructions and data
+at the pipeline level, eliminating the class of injection attacks that exploit unified context
+construction.* Strong, defensible, and something no current vendor can claim.
 
 ---
 
