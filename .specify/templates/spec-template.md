@@ -82,6 +82,21 @@
   Fill them out with the right functional requirements.
 -->
 
+### Compatibility Constraints (v0.1 — mandatory validation)
+
+*Reference: `docs/product/ARGOS_V01_IDEA.md` §13. Check each constraint this feature touches.*
+
+- [ ] Audit log schema includes `org_id`, `tenant_id` (nullable), `rotation_marker` entry type
+- [ ] Policy file has `version` field validated at load time
+- [ ] Session IDs are UUID v4
+- [ ] Hash function is SHA-256
+- [ ] OTel span emission is architecturally possible (pipeline not closed)
+- [ ] `argos` crate remains buildable as both binary and library
+- [ ] MCP error responses are spec-compliant JSON-RPC
+- [ ] HTTP/SSE mode accepts TLS certificate configuration
+- [ ] Audit log JSONL format supports `rotation_marker` entry type
+- [ ] Policy rules carry a `tags` field
+
 ### Functional Requirements
 
 - **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
