@@ -1,6 +1,6 @@
 # Argos
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-pre--release-orange.svg)](https://github.com/ogil109/argos/releases)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org/)
 
@@ -103,6 +103,9 @@ discussion. There is no mailing list or chat yet — that comes with community g
 
 ## License
 
-Apache 2.0 — permanently free and open source. See [LICENSE](LICENSE).
+AGPL-3.0 — permanently free and open source. See [LICENSE](LICENSE).
+
+If you need to embed or deploy Argos without the AGPL obligations (e.g. in a proprietary
+product), a commercial license is available — open an issue to discuss.
 
 ---
