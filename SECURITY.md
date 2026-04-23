@@ -9,7 +9,8 @@ No backport policy exists until a stable release (1.0.0) is declared.
 
 **Please do not open a public GitHub issue for security vulnerabilities.**
 
-Report security issues by email to: **github.com/ogil109/argos/security/advisories/new**
+Use GitHub's private vulnerability reporting:
+**[Report a vulnerability](https://github.com/ogil109/argos/security/advisories/new)**
 
 Include in your report:
 
