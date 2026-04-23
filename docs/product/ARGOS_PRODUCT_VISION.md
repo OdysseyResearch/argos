@@ -10,9 +10,9 @@
 
 Argos is the open infrastructure layer for AI agent security. It gives enterprise security teams the capability enforcement, runtime governance, and tamper-evident audit trail they need to deploy MCP-connected AI agents safely — without sending a single byte of their data to a third party.
 
-The name: Argos Panoptes, the hundred-eyed giant of Greek mythology, never slept and watched everything. That is the product in one image.
+The FOSS proxy establishes Argos as the default standard — the way Falco became the standard for container runtime security and OPA became the standard for policy enforcement. The Argos OS raises the ceiling to what no userspace tool can offer: structural enforcement of the data/instruction separation problem at the kernel level. The SaaS control plane, built on top of the OS, converts that standard into a sustainable business.
 
-The FOSS core establishes Argos as the default standard — the way Falco became the standard for container runtime security and OPA became the standard for policy enforcement. The SaaS control plane converts that standard into a sustainable business.
+The sequencing is deliberate: proxy first to earn community and credibility, OS second to build the defensible moat, SaaS third to monetise the combination. Revenue is not the goal of the proxy phase — the goal is becoming the standard before a well-funded competitor does.
 
 ---
 
@@ -296,12 +296,14 @@ As a one-person project, cost discipline is existential. All costs are either fo
 
 ---
 
-## 4. The FOSS-to-SaaS flywheel
+## 4. The product flywheel
 
-This is the core business model dynamic and must be understood to make correct product decisions at every stage.
+The business model has three distinct phases. Understanding the sequencing is essential to making
+correct product decisions at every stage.
 
 ```
-FOSS adoption
+Phase 1 — Standard
+FOSS proxy adoption
       │
       ▼
 Community trust → GitHub stars → Segment 3 integrations → Ecosystem gravity
@@ -310,48 +312,52 @@ Community trust → GitHub stars → Segment 3 integrations → Ecosystem gravit
 Enterprise AppSec teams adopt (Segment 1) → internal advocacy
       │
       ▼
-CISO visibility → compliance gap identified → SaaS conversation opens
+Grants + angel funding unlocked by community credibility
       │
       ▼
-Argos Cloud subscription (Segment 2) → ARR
+Phase 2 — Moat
+Argos OS — kernel-level enforcement + data/instruction separation
       │
       ▼
-SaaS revenue funds deeper FOSS development → better FOSS → more adoption
+Architectural guarantees no userspace tool can match
+      │
+      ▼
+Segment 1 upgrades → Segment 2 (CISO) conversation opens
+      │
+      ▼
+Phase 3 — Revenue
+Argos Cloud — SaaS built on OS-level audit guarantees
+      │
+      ▼
+ARR funds ongoing OS + proxy development
       └──────────────────────────────────────────────────────────┘
 ```
 
-**The key constraint:** the flywheel only works if the FOSS core is genuinely excellent and permanently free. Any attempt to move features from FOSS to SaaS (the HashiCorp mistake) breaks community trust and ends the flywheel. The SaaS layer must only contain things that are genuinely operational services — managed hosting, compliance report generation, threat intel feeds — not features that belong in the core.
+**Why this sequencing**: a solo founder cannot outspend large vendors on SaaS features. Racing
+to compliance dashboards and approval workflows puts Argos in a fight it cannot win. The OS +
+data/instruction separation is a multi-year research bet that large vendors will not take because
+it does not fit their quarterly roadmap. Deep focus and no organisational overhead are the
+competitive advantages here — they compound on the hard problem, not the easy one.
 
-**The conversion mechanism:** security teams (Segment 1) adopt because it's FOSS and excellent. They generate audit logs and policy specs. CISOs (Segment 2) need those artifacts in compliance-report format. That's the SaaS value proposition. Segment 1 becomes the internal champion selling Segment 2 on the SaaS upgrade.
+**The key constraint on Phase 1**: the FOSS core must be genuinely excellent and permanently free.
+Any attempt to move features from FOSS to SaaS (the HashiCorp mistake) breaks community trust
+and ends the flywheel before Phase 2 can start.
+
+**The funding path**: FOSS reputation and community → grants (NLnet, Sovereign Tech Fund,
+EU Horizon AI) → angel/seed from security-focused investors once the OS thesis is demonstrated.
+SaaS revenue is not required to reach the OS phase — grants are the bridge.
 
 ---
 
 ## 5. Product roadmap
 
-Version numbers follow SemVer strictly — majors bump on breaking changes to the policy format,
-CLI interface, audit log schema, or library API; they are not pinned to milestones. The one
-intentional marker is **Stable API** (0.x → 1.0.0), which signals that public interfaces are
-committed and production-safe. All other milestones ship at whatever version the changelog
-dictates.
+See [`docs/ROADMAP.md`](../ROADMAP.md) — the single source of truth for milestones, sequencing,
+and current status.
 
-| ID | Milestone | Key capability | Business model stage |
-| -- | --------- | -------------- | -------------------- |
-| M1 | **MCP Proxy MVP** | stdio + HTTP/SSE proxy, TOML policy, deny-by-default, Merkle audit log | FOSS foundation — earn community trust |
-| M2 | **Policy DSL** | Richer constraint expressions, wildcard tool matching, rule priority resolution | FOSS growth — developer adoption |
-| M3 | **Framework integrations** | Native LangChain, AutoGen, OpenAI Agents SDK plugins | FOSS expansion — Segment 3 adoption |
-| M4 | **Observability** | OpenTelemetry GenAI span emission, Sigstore/Rekor anchoring option | FOSS maturity — enterprise-readiness |
-| M5 | **Defence-in-depth** | Structural anomaly detection (response size, capability drift, output structure) + known MCP attack pattern signatures. Defence-in-depth layer — not a prevention claim | FOSS — honest defence-in-depth |
-| M6 | **Stable API** *(0.x → 1.0.0)* | Multi-agent session management, policy hot-reload, mTLS, performance benchmarks. Public interfaces declared stable | FOSS 1.0 — enterprise deployable |
-| M7 | **Argos Cloud alpha** | Policy console, basic compliance reports, approval workflows | SaaS — first revenue |
-| M8 | **Compliance reports** | EU AI Act, NIST AI RMF, ISO 42001 templates; SIEM integration | SaaS — CISO value unlocked |
-| M9 | **Threat intel** | Proprietary MCP attack pattern feed, automated policy suggestions | SaaS — defensible moat |
-
-### Argos OS (separate product line)
-
-The OS is not a milestone of the proxy — it is a separate product that shares the policy engine
-and enforcement philosophy as a common core. It becomes viable once the proxy has established
-community credibility and distribution. See §8 for the full rationale and the data/instruction
-separation research direction that the OS enables.
+Summary: three phases in deliberate order — **Standard** (FOSS proxy, M1–M6) to earn community
+credibility, **Moat** (Argos OS, OS1–OS2) to build the defensible technical advantage, **Revenue**
+(SaaS, M7–M9) built on top of the OS so the commercial product launches differentiated rather
+than racing incumbents on compliance dashboards.
 
 ---
 
