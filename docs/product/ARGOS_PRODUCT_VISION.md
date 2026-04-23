@@ -1,7 +1,8 @@
 # Argos — Product Vision Document
-**Version:** 0.1  
-**Status:** Strategic foundation — informs all downstream SDD and implementation  
-**Companion document:** `ARGOS_V01_IDEA.md` (v0.1 MVP scope)  
+
+**Version:** 0.1\
+**Status:** Strategic foundation — informs all downstream SDD and implementation\
+**Companion document:** `ARGOS_V01_IDEA.md` (v0.1 MVP scope)\
 **Date:** April 2026
 
 ---
@@ -71,6 +72,7 @@ Teams building on top of LangChain, AutoGen, LlamaIndex, or building internal ag
 > Argos is the only self-hosted, open-source MCP security proxy that enforces capability policies at the transport layer and produces a tamper-evident audit trail — with zero data egress and sub-millisecond overhead.
 
 Pain relievers:
+
 - Fills the security vacuum in MCP-connected agent deployments — no existing FOSS does this
 - Self-hosted: enterprise prompts and tool outputs never leave the perimeter
 - Deny-by-default posture with a human-readable TOML policy format
@@ -78,6 +80,7 @@ Pain relievers:
 - Single Rust binary — no runtime dependencies, no CVE surface, integrates as a sidecar or library
 
 Gain creators:
+
 - Open source passes procurement without a vendor review cycle
 - Policy spec format creates a reusable approval contract for new agent deployments
 - Architectural capability enforcement (not probabilistic detection) — honest defence-in-depth positioning
@@ -87,11 +90,13 @@ Gain creators:
 > Argos Cloud turns your self-hosted audit logs and policy specs into compliance-ready evidence, board-presentable dashboards, and automated approval workflows — mapped to EU AI Act, NIST AI RMF, and ISO 42001 out of the box.
 
 Pain relievers:
+
 - Compliance evidence is generated continuously by the FOSS runtime — the SaaS layer maps it to specific regulatory requirements
 - Eliminates the manual scramble of assembling audit evidence retroactively under regulatory deadline
 - Central policy management across multiple agent deployments and teams
 
 Gain creators:
+
 - EU AI Act Article 13 transparency documentation produced automatically
 - NIST AI RMF Govern/Measure evidence generated as a byproduct of normal operation
 - Board-presentable dashboards showing AI risk posture without requiring engineering involvement
@@ -102,6 +107,7 @@ Gain creators:
 #### 3.3 Channels
 
 **FOSS core distribution:**
+
 - GitHub (primary) — where Segment 1 discovers, evaluates, and contributes
 - Crates.io — Rust ecosystem distribution
 - OWASP LLM Top 10 alignment — positions Argos within the reference framework security teams already use
@@ -110,6 +116,7 @@ Gain creators:
 - AI framework integration guides (LangChain, AutoGen, LlamaIndex) — reaches Segment 3 where they work
 
 **SaaS control plane distribution:**
+
 - Inbound from FOSS adoption — Segment 1 adopts FOSS, raises budget conversation with Segment 2
 - Direct outreach to CISO networks after FOSS traction is established
 - Gartner AI TRiSM market positioning — analysts already have a category for this
@@ -120,6 +127,7 @@ Gain creators:
 #### 3.4 Customer Relationships
 
 **Segment 1 — community-driven:**
+
 - GitHub Issues and Discussions as the primary support channel
 - Discord community for real-time help and contribution coordination
 - Public roadmap — contributors can see where the project is going
@@ -127,6 +135,7 @@ Gain creators:
 - Documentation and tutorials for common enterprise deployment patterns
 
 **Segment 2 — account-managed:**
+
 - Self-service onboarding for SaaS (trial to paid)
 - Dedicated account management for enterprise contracts (>$50k ARR)
 - Quarterly compliance report review calls
@@ -145,6 +154,7 @@ Gain creators:
 Argos Cloud: policy console, compliance report generation, threat intel feed, approval workflows, SIEM integration.
 
 Pricing model:
+
 - Per-agent-session pricing: scales naturally with customer AI adoption
 - Suggested tiers:
   - **Starter** (≤10 concurrent agent sessions): €299/month — for startups and small teams
@@ -164,6 +174,7 @@ Pricing: €2,000–€8,000/month depending on SLA tier.
 Policy design workshops, integration engagements, compliance readiness assessments. Sold as fixed-price engagements. Valuable in early stages for learning customer deployment patterns; deprioritised as the product matures.
 
 **What is not monetised:**
+
 - The FOSS core (argos-proxy, policy engine, audit log, MCP proxy) — permanently free and open source
 - Individual contributors are never charged for the core
 - No freemium tricks on the FOSS layer — the community trust this creates is the primary asset
@@ -175,6 +186,7 @@ Policy design workshops, integration engagements, compliance readiness assessmen
 As a one-person project, cost discipline is existential. All costs are either founder time or infrastructure.
 
 **Founder time (primary cost):**
+
 - Core Rust development
 - Security research (MCP CVE tracking, threat intel)
 - Community management (GitHub, Discord)
@@ -183,12 +195,14 @@ As a one-person project, cost discipline is existential. All costs are either fo
 - Sales and account management (eventually)
 
 **Infrastructure costs (SaaS layer):**
+
 - Cloud hosting for Argos Cloud (estimated €300–800/month at early scale)
 - CI/CD pipeline (GitHub Actions — free tier initially)
 - Monitoring and alerting (Grafana Cloud free tier initially)
 - Security tooling (dependency scanning, SAST)
 
 **One-time costs:**
+
 - Legal: FOSS license selection and review, SaaS terms of service, privacy policy — estimated €1,500–3,000
 - Domain, branding assets
 
@@ -203,16 +217,19 @@ As a one-person project, cost discipline is existential. All costs are either fo
 #### 3.7 Key Resources
 
 **Intellectual:**
+
 - The Argos codebase (Rust) — the primary asset
 - The policy spec format and DSL — if this becomes the standard format security teams write, the ecosystem locks in regardless of runtime choice. This is the OPA lesson.
 - The threat intel feed (eventually) — a proprietary, continuously updated dataset of MCP attack patterns and injection signatures
 - Compliance templates — pre-mapped policy outputs for EU AI Act, NIST AI RMF, ISO 42001
 
 **Human:**
+
 - Founder's Rust expertise and security knowledge
 - Community contributors (earned through FOSS trust)
 
 **Community:**
+
 - GitHub stars and adoption metrics — social proof that accelerates enterprise adoption
 - OWASP alignment — borrowed credibility from a trusted security standard
 
@@ -221,6 +238,7 @@ As a one-person project, cost discipline is existential. All costs are either fo
 #### 3.8 Key Activities
 
 **Phase 1 — Establish the standard (v0.1–v0.3):**
+
 - Build and ship the FOSS MCP security proxy (argos-proxy) — see `ARGOS_V01_IDEA.md`
 - Evolve the TOML policy format toward a full capability DSL
 - Track and respond to MCP ecosystem CVEs publicly — become the voice of MCP security
@@ -228,6 +246,7 @@ As a one-person project, cost discipline is existential. All costs are either fo
 - Build community: GitHub stars, Discord, first external contributors
 
 **Phase 2 — Expand the runtime (v0.4–v1.0):**
+
 - Add prompt content inspection layer (injection pattern detection as defence-in-depth)
 - Add multi-agent session management
 - Add OpenTelemetry GenAI span emission
@@ -235,12 +254,14 @@ As a one-person project, cost discipline is existential. All costs are either fo
 - Support the top 3 enterprise agent frameworks natively (LangChain, AutoGen, OpenAI Agents SDK)
 
 **Phase 3 — Launch SaaS (v1.0+):**
+
 - Build and launch Argos Cloud (policy console, compliance reports, approval workflows)
 - Build threat intel feed (proprietary MCP attack pattern database)
 - Build SIEM integrations (Splunk, Elastic, Microsoft Sentinel)
 - Begin enterprise sales
 
 **Continuous:**
+
 - Security research — stay ahead of the CVE curve
 - Compliance template maintenance — regulations evolve
 - Community management — GitHub, Discord, documentation
@@ -250,19 +271,23 @@ As a one-person project, cost discipline is existential. All costs are either fo
 #### 3.9 Key Partnerships
 
 **MCP ecosystem:**
+
 - Anthropic (MCP protocol owner) — alignment with their security guidance increases credibility
 - Microsoft (GitHub MCP, VS Code Copilot) — integration with their tooling reaches the largest enterprise developer base
 - These are not formal partnerships initially — they are community relationships earned through security research contributions
 
 **Standards bodies:**
+
 - OWASP — align Argos with the LLM Top 10 reference framework. Become a recommended tool.
 - NIST — contribute to AI RMF guidance on runtime controls. Positions Argos as standards-aligned.
 
 **Agent framework communities:**
+
 - LangChain, AutoGen, LlamaIndex — integration guides and official plugin status
 - These communities drive Segment 3 adoption, which creates ecosystem gravity
 
 **Distribution partnerships (later stage):**
+
 - Security integrators and MSSPs — for enterprise channel distribution
 - Cloud providers — marketplace listings (AWS Marketplace, Azure Marketplace) for frictionless enterprise procurement
 
@@ -275,22 +300,26 @@ As a one-person project, cost discipline is existential. All costs are either fo
 #### 3.10 Environment Analysis
 
 **Industry forces (threats and opportunities):**
+
 - Gartner predicts GenAI TRiSM market consolidation by end of 2026. F5/CalypsoAI, Check Point/Lakera, SentinelOne/Prompt Security have already demonstrated the M&A pattern.
 - *Threat:* a major vendor (Palo Alto, CrowdStrike, Wiz) builds or acquires an MCP security layer, commoditising the core.
 - *Defence:* the FOSS standard, once established, is not acquirable. HashiCorp showed this works; it also showed its limits when they moved to BSL. Argos should use Apache 2.0 or MIT — no licence switching risk.
 - *Opportunity:* consolidation validates the market and drives enterprise urgency. Being the open standard before consolidation is the only defensible position that doesn't depend on being acquired.
 
 **Market forces:**
+
 - MCP adoption is accelerating. Every major agent framework now has MCP support. The protocol is 18 months old and already ubiquitous.
 - Enterprise AI agent counts are growing from dozens to hundreds per organisation. Each one is a new security surface. This scales the pain.
 - CISO AI security budgets growing: 70% of organisations allocating >10% of security budget to AI (IANS 2025).
 
 **Key trends:**
+
 - EU AI Act enforcement began August 2025. NIST AI RMF is entering US federal procurement requirements. ISO 42001 certifications are being demanded in enterprise vendor RFPs. Compliance is no longer optional.
 - OpenTelemetry GenAI Semantic Conventions standardised in 2025 — Argos should align with this from v0.1 so the audit log is compatible with existing observability infrastructure.
 - "Guardian agent" pattern emerging (Gartner 2026) — AI systems supervising other AI systems. Argos is positioned to become the guardian layer.
 
 **Macroeconomic forces:**
+
 - Security budget growth slowing (4% in 2025 vs 8% prior year, IANS) — but AI security is the growth area within flat budgets. New category, not a budget reallocation fight.
 - One-person business model means extremely low burn — can survive on minimal revenue while building community.
 
@@ -368,6 +397,7 @@ These are the constraints the MVP must respect to avoid architectural debt that 
 See `ARGOS_V01_IDEA.md` Section 13 for the full constraint list with implementation notes.
 
 Summary:
+
 1. **Audit log schema must include reserved fields** for `org_id` and `tenant_id` — required for SaaS multi-tenancy
 2. **Policy file must have a `version` field** — required for non-breaking DSL evolution
 3. **Session ID must be UUID v4** — required for global uniqueness across distributed deployments
