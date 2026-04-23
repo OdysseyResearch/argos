@@ -362,15 +362,72 @@ Summary:
 
 ---
 
-## 7. What success looks like
+## 7. What Argos is not — and will not become
+
+Argos is a runtime security layer. It is not, and will not become:
+
+- An **agent platform** or framework (OpenFang, LangChain, AutoGen)
+- An **agent orchestrator** or scheduler
+- A **tool provider** or capability runtime
+- A **chatbot interface** or conversation manager
+- A **secrets manager** or credential vault (policy rules can block access to secret paths —
+  the vault is not built in)
+
+This focus is intentional and strategic. Security credibility is earned by doing one thing
+exceptionally well and being auditable. A product that also runs agents, manages channels, and
+provides autonomous capabilities cannot credibly claim to be a neutral security boundary — it
+has inherent conflicts of interest between capability and enforcement.
+
+Argos's value proposition is precisely that it is **agnostic to the agent platform**. It can
+secure an OpenFang deployment, a LangChain agent, a custom AutoGen pipeline, or anything else
+that speaks MCP — because it operates at the transport layer, not inside the runtime. Expanding
+into orchestration or agent capabilities would turn Argos into a competitor of the platforms it
+needs to integrate with, and destroy the ecosystem neutrality that drives adoption.
+
+**When a feature request sounds like "Argos should also do X for agents", the answer is no.**
+The right answer is "Argos should enforce the security boundary around X, whatever X is."
+
+---
+
+## 8. Long-term platform direction
+
+The proxy-first roadmap (v0.1–v2.0) establishes Argos as the standard for MCP runtime security.
+The logical long-term extension is a purpose-built OS for AI agent execution.
+
+**The argument**: a userspace proxy, however well-designed, can be bypassed by a sufficiently
+compromised agent — one with elevated privileges could circumvent the proxy, write directly to the
+network, or tamper with audit logs stored on the same filesystem. An OS purpose-built for AI agent
+workloads closes those attack vectors by pushing enforcement below the application layer: into the
+kernel, the scheduler, and ideally hardware-rooted trust (TPM, secure boot). Tamper-evidence
+becomes structural rather than cryptographic convention.
+
+**The precedent**: Bottlerocket (AWS) and Talos Linux demonstrate that purpose-built OS
+distributions for specific runtime security concerns are viable and valued in enterprise
+infrastructure. An "AI agent execution OS" is a coherent product category that does not yet exist.
+
+**The sequencing**: this is a v3.0+ horizon, not a near-term distraction. The proxy must win the
+community and establish the standard first — that earns the credibility and the distribution
+channel to make an OS adoption story possible. Attempting both simultaneously would compromise
+both. The proxy is the wedge; the OS is the long-term defensible moat.
+
+**Architectural implication for early decisions**: nothing in v0.1–v2.0 should be designed in a
+way that makes OS-layer integration impossible. The library crate requirement (Principle IV,
+constraint 6) already supports this — the policy engine embedded in an OS-level enforcement
+daemon is a natural evolution of the same codebase.
+
+---
+
+## 8. What success looks like
 
 **6 months (post v0.1 ship):**
+
 - 500+ GitHub stars
 - 3+ enterprise security teams using argos-proxy in production or evaluation
 - Referenced in at least one OWASP LLM Top 10 discussion or community contribution
 - v0.2 shipped with DSL improvements informed by real user feedback
 
 **12 months:**
+
 - 2,000+ GitHub stars
 - 10+ enterprise production deployments
 - First paid Argos Cloud customer
@@ -378,6 +435,7 @@ Summary:
 - Community has produced at least one third-party integration (LangChain plugin, etc.)
 
 **24 months:**
+
 - €30k+ MRR from Argos Cloud
 - 50+ enterprise deployments
 - Argos is the answer when someone asks "what FOSS tool do you use for MCP security?"

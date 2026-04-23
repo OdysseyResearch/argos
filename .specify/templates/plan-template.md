@@ -31,7 +31,17 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **I. Deny by Default** — does this feature maintain or reinforce the block-everything default?
+- [ ] **II. Zero Data Egress** — does this feature introduce any external data transmission?
+      If yes, is it opt-in, documented, and architecturally isolated?
+- [ ] **III. FOSS Core Integrity** — does this feature belong in the FOSS core or the SaaS layer?
+      If SaaS-only, is the boundary explicit?
+- [ ] **IV. Future Compatibility** — validated against all 10 constraints in
+      `docs/product/ARGOS_V01_IDEA.md` §13. List any constraint touched and how it is respected.
+- [ ] **V. Architectural Honesty** — do any new claims, docs, or error messages overstate
+      Argos's capabilities (e.g., implying injection prevention)?
+- [ ] **VI. Test-Proven Correctness** — are security-critical paths in this feature covered by
+      unit and integration tests before the feature is considered done?
 
 ## Project Structure
 

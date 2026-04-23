@@ -1,50 +1,156 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+==================
+Version change: (none) → 1.0.0 (initial ratification)
+
+Principles added:
+  I.   Deny by Default
+  II.  Zero Data Egress
+  III. FOSS Core Integrity
+  IV.  Future Compatibility
+  V.   Architectural Honesty
+  VI.  Test-Proven Correctness
+
+Sections added:
+  - Architecture Constraints
+  - Development Workflow
+  - Governance
+
+Templates updated:
+  ✅ .specify/templates/plan-template.md — Constitution Check gates filled in
+  ✅ CLAUDE.md — reference to constitution and plan added
+  ✅ .specify/templates/spec-template.md — §13 compatibility note added to Requirements
+  ✅ .specify/templates/tasks-template.md — no changes required (test discipline already present)
+
+Deferred items: none
+-->
+
+# Argos Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Deny by Default
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+The proxy's default posture is block-everything. Any tool call not explicitly permitted by a loaded
+policy MUST be blocked and logged. There is no opt-in to a permissive mode — `--dry-run` is for
+policy development only and must log every violation loudly. This principle defines the Argos brand:
+if a configuration cannot be made safe, the system fails safe.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: a security product that defaults to permissive trains users to ignore it and
+provides no protection against misconfiguration.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Zero Data Egress
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+No byte of customer data — prompts, tool arguments, tool outputs, audit log entries — may be
+transmitted outside the customer's infrastructure by the FOSS core. Any feature requiring external
+connectivity (Sigstore anchoring, OTel export, SaaS reporting) MUST be opt-in, clearly documented,
+and architecturally isolated so it can be compiled out or disabled without affecting core behaviour.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Rationale**: enterprise adoption is blocked by data-egress policies. This constraint is the
+primary differentiator from every commercial alternative and must never be compromised.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. FOSS Core Integrity
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+The security proxy (`argos-proxy`), policy engine, audit log writer, and MCP transport adapters
+are permanently free and open source under Apache 2.0. No capability from this list may be moved
+behind a paywall, a license-key feature flag, or a cloud dependency. The SaaS layer (Argos Cloud)
+MUST add only operational services — managed hosting, compliance report generation, threat intel
+feeds — never capabilities that belong in the runtime.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Rationale**: the FOSS-to-SaaS flywheel only works if the core is genuinely excellent and
+permanently free. Any encumbrance of the core destroys community trust and ends the flywheel.
+HashiCorp's BSL migration is the canonical anti-pattern to avoid.
+
+### IV. Future Compatibility
+
+No implementation decision in v0.1 may foreclose a capability defined in
+`docs/product/ARGOS_PRODUCT_VISION.md` §5 (roadmap) without explicit acknowledgement of the
+tradeoff. The 10 constraints in `docs/product/ARGOS_V01_IDEA.md` §13 are binding architectural
+requirements. Every spec and plan MUST include a compatibility constraint validation pass before
+implementation begins.
+
+**Rationale**: architectural debt incurred in v0.1 compounds. The 10 constraints are the minimum
+set that keeps all roadmap doors open without rewrites.
+
+### V. Architectural Honesty
+
+Argos is a capability enforcer, not a probabilistic guardrail, AI safety system, or injection
+detector. Technical claims MUST be accurate and defensible. "Enforces capability policies at the
+transport layer" is true. "Prevents prompt injection" is not — and must never appear in
+documentation or marketing. Defence-in-depth features (v0.5+) MUST be positioned as additional
+layers, never as the primary value proposition.
+
+**Rationale**: false security claims are a trust liability. The target customer (AppSec engineer)
+will verify claims. Overstating capabilities destroys credibility with the exact audience Argos
+needs to win.
+
+Argos MUST NOT expand into agent platforms, orchestration, tool provision, or any capability that
+belongs inside the agent runtime. Argos enforces the security boundary around agents — it does not
+participate in what agents do. This focus is the source of ecosystem neutrality: Argos can secure
+any agent platform precisely because it competes with none of them. See
+`docs/product/ARGOS_PRODUCT_VISION.md` §7 for the full rationale.
+
+### VI. Test-Proven Correctness
+
+For a security product, correctness is existential. All policy evaluation logic, Merkle chain
+integrity, and proxy transport flow paths MUST have automated tests before any v0.1 success
+criterion is claimed as met. Required minimum coverage:
+
+- Unit tests: policy engine (allow/block/redact decisions, rule ordering, wildcard matching)
+- Unit tests: Merkle chain writer (hash chaining, genesis entry, chain verification)
+- Integration tests: stdio proxy flow end-to-end (allow path, block path, redact path)
+- Integration tests: HTTP/SSE proxy flow end-to-end (allow path, block path)
+
+No security-critical path ships without tests.
+
+## Architecture Constraints
+
+- The primary deliverable is a single Rust binary (`argos-proxy`) with no runtime dependencies.
+- The `argos` crate MUST be buildable as both `[[bin]]` and `[lib]` in a single Cargo workspace.
+  The policy engine and audit writer MUST be exposed as public library APIs.
+- Async runtime: Tokio. No alternatives evaluated for v0.1.
+- Policy format: TOML with mandatory `version` field validated at load time. Unrecognised versions
+  produce a hard error, not a warning.
+- Audit log: JSONL, SHA-256 Merkle-chained. The hash function MUST NOT be changed — Sigstore/Rekor
+  compatibility in v0.4 depends on SHA-256 specifically.
+- Session IDs: UUID v4, generated once per proxy invocation.
+- HTTP/SSE mode: MUST accept TLS certificate configuration at the CLI level even if mTLS is not
+  enforced in v0.1. Retrofitting TLS config later is a breaking change.
+- Audit log schema: MUST include `org_id` and `tenant_id` fields (nullable in v0.1) and a
+  `rotation_marker` entry type (not emitted in v0.1). Omitting them from the schema forecloses
+  SaaS multi-tenancy and v1.0 log rotation.
+- Policy rules: MUST carry a `tags` field (empty array acceptable in v0.1). Required for v1.1
+  compliance report template mapping.
+
+The long-term platform direction (v3.0+ horizon) is a purpose-built OS for AI agent execution,
+where enforcement moves below the application layer. Nothing in the proxy architecture should
+foreclose OS-level integration — the library crate requirement already supports this trajectory.
+See `docs/product/ARGOS_PRODUCT_VISION.md` §7 for the full rationale.
+
+## Development Workflow
+
+- All features follow the SDD process: `/speckit-specify` → `/speckit-clarify` → `/speckit-plan`
+  → `/speckit-tasks` → `/speckit-implement`.
+- Features begin on a dedicated branch created with `/speckit-git-feature`.
+- All commits MUST follow Conventional Commits, enforced by the commitizen pre-commit hook.
+- All commits touching `docs/`, `.claude/`, or `.specify/` are scanned for sensitive data by the
+  Claude pre-commit hook before merge. This project is developed in public.
+- Every spec MUST include a validation pass against the 10 compatibility constraints in
+  `docs/product/ARGOS_V01_IDEA.md` §13 before implementation begins.
+- Security-critical paths (policy engine, audit writer, transport adapters) require self-review
+  against Principles I, II, V, and VI before any PR is considered complete.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other project practices when conflicts arise. Amendments require:
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+1. A documented rationale for the change.
+2. An assessment of which specs, plans, and tasks are affected.
+3. A semantic version bump: MAJOR for principle removal or redefinition; MINOR for new principle
+   or section; PATCH for clarifications and wording fixes.
+4. An update to `LAST_AMENDED_DATE`.
+
+Use `CLAUDE.md` for runtime development guidance (read by the AI assistant on every session).
+Use `docs/product/` for product strategy and vision documents.
+
+**Version**: 1.0.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-23
