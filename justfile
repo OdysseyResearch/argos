@@ -1,6 +1,8 @@
 # Argos — development task runner
-# Prerequisite: cargo install just --version 1.50.0
-# Then run:     just setup
+# Prerequisites:
+#   1. cargo install just --version 1.50.0
+#   2. install uv: https://docs.astral.sh/uv/getting-started/installation/
+# Then run: just setup
 
 # List available recipes
 default:
@@ -13,13 +15,7 @@ setup: _cargo-tools
 
 # Read [package.metadata.tools] from Cargo.toml and cargo install each pinned version
 _cargo-tools:
-    #!/usr/bin/env python3
-    import subprocess, tomllib
-    with open("Cargo.toml", "rb") as f:
-        tools = tomllib.load(f).get("package", {}).get("metadata", {}).get("tools", {})
-    for name, version in tools.items():
-        print(f"  cargo install {name} --version {version}")
-        subprocess.run(["cargo", "install", name, "--version", version], check=True)
+    uv run python3 -c "import subprocess,tomllib;tools=tomllib.load(open('Cargo.toml','rb')).get('package',{}).get('metadata',{}).get('tools',{});[subprocess.run(['cargo','install',n,'--version',v],check=True) for n,v in tools.items()]"
 
 # Format all code (markdown + Rust)
 fmt:
