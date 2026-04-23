@@ -1,7 +1,8 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.1.0 (MINOR — new principle added, stale references fixed)
+Version change: 1.1.0 → 1.2.0 (MINOR — license changed from Apache 2.0 to AGPL-3.0,
+dual commercial license added to Principle III rationale)
 
 Principles added:
   VII. Three-Phase Strategy
@@ -51,14 +52,23 @@ primary differentiator from every commercial alternative and must never be compr
 ### III. FOSS Core Integrity
 
 The security proxy (`argos-proxy`), policy engine, audit log writer, and MCP transport adapters
-are permanently free and open source under Apache 2.0. No capability from this list may be moved
+are permanently free and open source under AGPL-3.0. No capability from this list may be moved
 behind a paywall, a license-key feature flag, or a cloud dependency. The SaaS layer (Argos Cloud)
 MUST add only operational services — managed hosting, compliance report generation, threat intel
 feeds — never capabilities that belong in the runtime.
 
-**Rationale**: the FOSS core must be genuinely excellent and permanently free. Any encumbrance
-destroys community trust and ends the flywheel. HashiCorp's BSL migration is the canonical
-anti-pattern to avoid.
+A commercial license is offered in parallel for organisations that cannot accept AGPL-3.0
+obligations (e.g. embedding Argos in a proprietary product). The commercial license is a revenue
+stream, not a capability restriction — it grants the same runtime rights as AGPL-3.0 without the
+copyleft obligations. The FOSS core MUST remain fully functional under AGPL-3.0 without the
+commercial license.
+
+**Rationale**: AGPL-3.0's network copyleft clause prevents a well-funded competitor from forking
+`argos-proxy`, adding proprietary features, and running a competing SaaS without contributing
+back. Apache 2.0 would permit this. The commercial license dual tracks enterprise adoption for
+organisations with AGPL procurement restrictions. HashiCorp's BSL migration is the canonical
+anti-pattern to avoid — BSL removes open-source status entirely; dual licensing under AGPL-3.0
+does not.
 
 ### IV. Future Compatibility
 
@@ -173,4 +183,4 @@ Use `CLAUDE.md` for runtime development guidance (read by the AI assistant on ev
 Use `docs/product/` for product strategy and vision documents.
 Use `docs/ROADMAP.md` for milestone sequencing and current status.
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-23
+**Version**: 1.2.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-23
