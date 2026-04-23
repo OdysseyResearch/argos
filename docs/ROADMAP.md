@@ -16,14 +16,14 @@ For the strategic rationale behind this sequencing see
 Goal: establish Argos as the default open standard for MCP runtime security before a well-funded
 competitor does. Revenue is not the goal of this phase — community credibility is.
 
-| ID  | Milestone                     | Key capability                                                                                                        | Status         |
-| --- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------- |
-| M1  | **MCP Proxy MVP**             | stdio + HTTP/SSE proxy, TOML policy, deny-by-default, Merkle audit log                                               | 🚧 In progress |
-| M2  | **Policy DSL**                | Richer constraint expressions, wildcard tool matching, rule priority resolution                                       | Planned        |
-| M3  | **Framework integrations**    | Native LangChain, AutoGen, OpenAI Agents SDK plugins                                                                 | Planned        |
-| M4  | **Observability**             | OpenTelemetry GenAI span emission, Sigstore/Rekor anchoring option                                                   | Planned        |
-| M5  | **Defence-in-depth**          | Structural anomaly detection + known MCP attack pattern signatures. Defence-in-depth layer — not a prevention claim  | Planned        |
-| M6  | **Stable API** *(0.x → 1.0.0)* | Multi-agent session management, policy hot-reload, mTLS, performance benchmarks. Public interfaces declared stable  | Planned        |
+| ID | Milestone                      | Key capability                                                                                                      | Status         |
+| -- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------- | -------------- |
+| M1 | **MCP Proxy MVP**              | stdio + HTTP/SSE proxy, TOML policy, deny-by-default, Merkle audit log                                              | 🚧 In progress |
+| M2 | **Policy DSL**                 | Richer constraint expressions, wildcard tool matching, rule priority resolution                                     | Planned        |
+| M3 | **Framework integrations**     | Native LangChain, AutoGen, OpenAI Agents SDK plugins                                                                | Planned        |
+| M4 | **Observability**              | OpenTelemetry GenAI span emission, Sigstore/Rekor anchoring option                                                  | Planned        |
+| M5 | **Defence-in-depth**           | Structural anomaly detection + known MCP attack pattern signatures. Defence-in-depth layer — not a prevention claim | Planned        |
+| M6 | **Stable API** *(0.x → 1.0.0)* | Multi-agent session management, policy hot-reload, mTLS, performance benchmarks. Public interfaces declared stable  | Planned        |
 
 ---
 
@@ -34,10 +34,10 @@ credibility and unlocked grant funding. See
 [`docs/product/ARGOS_PRODUCT_VISION.md`](product/ARGOS_PRODUCT_VISION.md) §8 for the full
 technical rationale and the data/instruction separation mechanisms.
 
-| ID  | Milestone                       | Key capability                                                                                                                                        | Status  |
-| --- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| OS1 | **Argos OS foundation**         | Purpose-built agent execution OS: immutable root, no shell, kernel-level policy enforcement, TPM-rooted audit log                                     | Future  |
-| OS2 | **Data/instruction separation** | Memory tagging (taint tracking), dual-channel context construction, immutable instruction manifests, capability-sealed tool outputs                    | Future  |
+| ID  | Milestone                       | Key capability                                                                                                                      | Status |
+| --- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| OS1 | **Argos OS foundation**         | Purpose-built agent execution OS: immutable root, no shell, kernel-level policy enforcement, TPM-rooted audit log                   | Future |
+| OS2 | **Data/instruction separation** | Memory tagging (taint tracking), dual-channel context construction, immutable instruction manifests, capability-sealed tool outputs | Future |
 
 ---
 
@@ -47,8 +47,8 @@ Built on top of the OS. SaaS audit guarantees backed by kernel-level enforcement
 fundamentally stronger than any proxy-based equivalent, making this a differentiated product
 at launch rather than a compliance-dashboard race against well-funded incumbents.
 
-| ID  | Milestone               | Key capability                                                               | Status |
-| --- | ----------------------- | ---------------------------------------------------------------------------- | ------ |
-| M7  | **Argos Cloud alpha**   | Policy console, basic compliance reports, approval workflows                 | Future |
-| M8  | **Compliance reports**  | EU AI Act, NIST AI RMF, ISO 42001 templates; SIEM integration               | Future |
-| M9  | **Threat intel**        | Proprietary MCP attack pattern feed, automated policy suggestions            | Future |
+| ID | Milestone              | Key capability                                                    | Status |
+| -- | ---------------------- | ----------------------------------------------------------------- | ------ |
+| M7 | **Argos Cloud alpha**  | Policy console, basic compliance reports, approval workflows      | Future |
+| M8 | **Compliance reports** | EU AI Act, NIST AI RMF, ISO 42001 templates; SIEM integration     | Future |
+| M9 | **Threat intel**       | Proprietary MCP attack pattern feed, automated policy suggestions | Future |

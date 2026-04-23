@@ -1,7 +1,8 @@
 # Argos — v0.1 Idea Document
-**Version:** 0.2 (renamed from Sentinel, updated with future compatibility constraints)  
-**Status:** SDD entrypoint — not yet a specification  
-**Companion document:** `ARGOS_PRODUCT_VISION.md` (full product vision and Business Model Canvas)  
+
+**Version:** 0.2 (renamed from Sentinel, updated with future compatibility constraints)\
+**Status:** SDD entrypoint — not yet a specification\
+**Companion document:** `ARGOS_PRODUCT_VISION.md` (full product vision and Business Model Canvas)\
 **Date:** April 2026
 
 ---
@@ -240,18 +241,18 @@ MCP Client (Claude Desktop / Cursor / any agent)
 
 ## 8. Technology decisions
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| Language | Rust | Memory safety, single binary, sub-ms overhead, no CVE surface from runtime |
-| Async runtime | Tokio | De facto standard for Rust async I/O; broad ecosystem support |
-| Policy format | TOML | Rust-native (`toml` crate), human-readable, survives DSL evolution via `version` field |
-| Audit log format | JSONL + SHA-256 Merkle chain | Auditor-legible, tamper-evident from day one, OTel-compatible, Sigstore/Rekor-ready |
-| Hash function | SHA-256 | Standard, well-audited; required for Sigstore/Rekor compatibility in v0.4 |
-| Transport support | stdio + HTTP/SSE | Covers all current MCP clients and server deployment patterns |
-| Default posture | Deny by default | Non-negotiable for a security product; defines the brand |
-| Config delivery | File + CLI flags | No network required; works air-gapped; no attack surface |
-| Session ID | UUID v4 | Globally unique; required for distributed deployments in v1.0+ |
-| Binary vs library | Both (bin + lib crate) | Binary for direct use; library crate for SaaS control plane integration in v1.1+ |
+| Decision          | Choice                       | Rationale                                                                              |
+| ----------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
+| Language          | Rust                         | Memory safety, single binary, sub-ms overhead, no CVE surface from runtime             |
+| Async runtime     | Tokio                        | De facto standard for Rust async I/O; broad ecosystem support                          |
+| Policy format     | TOML                         | Rust-native (`toml` crate), human-readable, survives DSL evolution via `version` field |
+| Audit log format  | JSONL + SHA-256 Merkle chain | Auditor-legible, tamper-evident from day one, OTel-compatible, Sigstore/Rekor-ready    |
+| Hash function     | SHA-256                      | Standard, well-audited; required for Sigstore/Rekor compatibility in v0.4              |
+| Transport support | stdio + HTTP/SSE             | Covers all current MCP clients and server deployment patterns                          |
+| Default posture   | Deny by default              | Non-negotiable for a security product; defines the brand                               |
+| Config delivery   | File + CLI flags             | No network required; works air-gapped; no attack surface                               |
+| Session ID        | UUID v4                      | Globally unique; required for distributed deployments in v1.0+                         |
+| Binary vs library | Both (bin + lib crate)       | Binary for direct use; library crate for SaaS control plane integration in v1.1+       |
 
 ---
 
@@ -324,15 +325,15 @@ These constraints are derived from `ARGOS_PRODUCT_VISION.md` Sections 5 and 6. E
 
 **These are non-negotiable.** If any constraint must be violated, the violation must be explicitly documented with the tradeoff acknowledged.
 
-| # | Constraint | Why it matters | Violated by |
-|---|---|---|---|
-| 1 | Audit log entries must include `org_id` and `tenant_id` fields (nullable in v0.1) | SaaS multi-tenancy in v1.1 requires these fields for tenant isolation | Omitting them from the schema entirely |
-| 2 | Policy file must have a `version` field, validated at load time | DSL evolution in v0.2+ must be non-breaking; old policies must fail loudly on new parsers | Accepting policy files without version |
-| 3 | Session ID must be UUID v4, generated once per proxy invocation | Global uniqueness required for distributed deployments in v1.0 | Using sequential integers or hostname-based IDs |
-| 4 | Audit log hash function must be SHA-256 | Sigstore/Rekor anchoring in v0.4 requires SHA-256 | Using any other hash function |
-| 5 | OTel span emission must be architecturally possible (even if not implemented) | v0.4 adds OpenTelemetry GenAI spans without breaking existing deployments | Designing the request pipeline in a way that makes span injection impossible without a rewrite |
-| 6 | `argos` must be buildable as both a binary and a library crate | SaaS control plane in v1.1 embeds the policy engine and audit writer as a library | Making the policy engine only callable via CLI |
-| 7 | MCP error responses must be spec-compliant JSON-RPC | Forward compatibility as MCP protocol evolves; client compatibility | Returning non-standard error formats |
-| 8 | HTTP/SSE mode must accept TLS certificate configuration (even if not enforced) | Enterprise deployment requires mTLS in v1.0; retrofitting TLS config into the CLI is a breaking change | Hardcoding HTTP-only in the HTTP mode |
-| 9 | Audit log JSONL format must support a `rotation_marker` entry type (even if not emitted in v0.1) | v1.0 log rotation requires a clean marker entry type in the format spec | Defining the JSONL format as only supporting `decision` entry types |
-| 10 | Policy rules must carry a `tags` field (empty array `[]` acceptable in v0.1) | v1.1 compliance report templates map policy rules to specific regulatory controls via tags | Omitting the `tags` field from the rule schema entirely |
+| #  | Constraint                                                                                       | Why it matters                                                                                         | Violated by                                                                                    |
+| -- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| 1  | Audit log entries must include `org_id` and `tenant_id` fields (nullable in v0.1)                | SaaS multi-tenancy in v1.1 requires these fields for tenant isolation                                  | Omitting them from the schema entirely                                                         |
+| 2  | Policy file must have a `version` field, validated at load time                                  | DSL evolution in v0.2+ must be non-breaking; old policies must fail loudly on new parsers              | Accepting policy files without version                                                         |
+| 3  | Session ID must be UUID v4, generated once per proxy invocation                                  | Global uniqueness required for distributed deployments in v1.0                                         | Using sequential integers or hostname-based IDs                                                |
+| 4  | Audit log hash function must be SHA-256                                                          | Sigstore/Rekor anchoring in v0.4 requires SHA-256                                                      | Using any other hash function                                                                  |
+| 5  | OTel span emission must be architecturally possible (even if not implemented)                    | v0.4 adds OpenTelemetry GenAI spans without breaking existing deployments                              | Designing the request pipeline in a way that makes span injection impossible without a rewrite |
+| 6  | `argos` must be buildable as both a binary and a library crate                                   | SaaS control plane in v1.1 embeds the policy engine and audit writer as a library                      | Making the policy engine only callable via CLI                                                 |
+| 7  | MCP error responses must be spec-compliant JSON-RPC                                              | Forward compatibility as MCP protocol evolves; client compatibility                                    | Returning non-standard error formats                                                           |
+| 8  | HTTP/SSE mode must accept TLS certificate configuration (even if not enforced)                   | Enterprise deployment requires mTLS in v1.0; retrofitting TLS config into the CLI is a breaking change | Hardcoding HTTP-only in the HTTP mode                                                          |
+| 9  | Audit log JSONL format must support a `rotation_marker` entry type (even if not emitted in v0.1) | v1.0 log rotation requires a clean marker entry type in the format spec                                | Defining the JSONL format as only supporting `decision` entry types                            |
+| 10 | Policy rules must carry a `tags` field (empty array `[]` acceptable in v0.1)                     | v1.1 compliance report templates map policy rules to specific regulatory controls via tags             | Omitting the `tags` field from the rule schema entirely                                        |

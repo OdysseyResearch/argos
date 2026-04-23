@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+# Dev tools — install with: cargo install <name> --version <version>
+[package.metadata.tools]
+dprint = "0.54.0"
