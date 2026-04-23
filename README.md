@@ -80,13 +80,15 @@ reason = "Default deny — tool not in policy"
 > **Pre-release.** Argos is under active development. The v0.1 MVP is being built now.
 > Star the repo to follow progress.
 
-| Version                       | Status            |
+| Milestone                     | Status            |
 | ----------------------------- | ----------------- |
-| v0.1 — MCP proxy MVP          | 🚧 In development |
-| v0.2 — Policy DSL v1          | Planned           |
-| v0.3 — Framework integrations | Planned           |
-| v1.0 — Production-ready       | Planned           |
-| Argos Cloud (SaaS)            | Future            |
+| M1 — MCP proxy MVP            | 🚧 In development |
+| M2 — Policy DSL               | Planned           |
+| M3 — Framework integrations   | Planned           |
+| M4 — Observability            | Planned           |
+| M5 — Defence-in-depth         | Planned           |
+| M6 — Stable API (1.0.0)       | Planned           |
+| M7–M9 — Argos Cloud           | Future            |
 
 ## Why Rust
 
