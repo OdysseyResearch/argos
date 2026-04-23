@@ -77,18 +77,10 @@ reason = "Default deny — tool not in policy"
 
 ## Status
 
-> **Pre-release.** Argos is under active development. The v0.1 MVP is being built now.
+> **Pre-release.** Argos is under active development. M1 (MCP proxy MVP) is being built now.
 > Star the repo to follow progress.
 
-| Milestone                     | Status            |
-| ----------------------------- | ----------------- |
-| M1 — MCP proxy MVP            | 🚧 In development |
-| M2 — Policy DSL               | Planned           |
-| M3 — Framework integrations   | Planned           |
-| M4 — Observability            | Planned           |
-| M5 — Defence-in-depth         | Planned           |
-| M6 — Stable API (1.0.0)       | Planned           |
-| M7–M9 — Argos Cloud           | Future            |
+See [**ROADMAP.md**](docs/ROADMAP.md) for the full milestone plan and sequencing rationale.
 
 ## Why Rust
 
