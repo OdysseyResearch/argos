@@ -1,7 +1,7 @@
 # Argos
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-pre--release-orange.svg)]()
+[![Status](https://img.shields.io/badge/status-pre--release-orange.svg)](https://github.com/ogil109/argos/releases)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org/)
 
 **Open-source MCP security proxy. Enforce capability policies on AI agents. Produce
