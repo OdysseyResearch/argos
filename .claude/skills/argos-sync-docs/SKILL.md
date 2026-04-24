@@ -45,13 +45,12 @@ Execution steps:
    - **Transport mode inference** — how stdio vs HTTP mode is determined
    - Any other decision recorded in the spec's `## Clarifications` section
 
-4. Find all Markdown files under `docs/` recursively:
-   ```
-   find docs/ -name "*.md"
-   ```
+4. Find all Markdown files to sync — two sources:
+   - All files under `docs/` recursively: `find docs/ -name "*.md"`
+   - `README.md` at the repo root (always included if it exists)
    Read each file.
 
-5. For each file under `docs/`:
+5. For each file (`docs/**/*.md` and `README.md`):
 
    a. For each decision area extracted in step 3, search the document for any passage
       that describes that area — whether by explicit mention, example, or implication.
@@ -85,4 +84,5 @@ Behavior rules:
 - If a decision area is not mentioned anywhere in a document, do not add it — the doc
   may intentionally omit it.
 - This skill is idempotent: running it twice in a row produces no further changes.
-- If `docs/` does not exist, output "No docs/ directory found." and exit cleanly.
+- If `docs/` does not exist and `README.md` is absent, output "No docs/ directory or README.md found." and exit cleanly.
+- If only `README.md` exists (no `docs/`), sync README.md alone and report normally.

@@ -202,8 +202,16 @@ tags = []
 
 Fields marked `null` in v0.1: `org_id`, `tenant_id` — reserved for SaaS multi-tenancy in v1.1+.
 `message_type` is one of `"tools/call"`, `"resources/read"`, `"resources/list"`, `"resources/subscribe"`.
+`agent` is sourced from the `--agent <name>` CLI flag (defaults to `"unknown"` if omitted) — it
+identifies the session operator label, not the policy file's `[meta].agent` metadata field.
 
 ### Proxy config (CLI)
+
+stdio mode — `argos-proxy` replaces the server command in the MCP client config (Claude Code,
+Roo Code, GitHub Copilot). The `--` separator triggers stdio mode; no `--mode` flag exists.
+
+Both `--policy` and `--audit-log` are required flags — the proxy refuses to start if either is
+omitted. `--agent` is optional (defaults to `"unknown"` in audit entries).
 
 stdio mode — `argos-proxy` replaces the server command in the MCP client config (Claude Code,
 Roo Code, GitHub Copilot). The `--` separator triggers stdio mode; no `--mode` flag exists.
@@ -212,6 +220,7 @@ Roo Code, GitHub Copilot). The `--` separator triggers stdio mode; no `--mode` f
 argos-proxy \
   --policy ./argos.toml \
   --audit-log ./audit.jsonl \
+  --agent code-review-agent \
   --dry-run \
   -- npx @modelcontextprotocol/server-filesystem /workspace
 ```
@@ -223,6 +232,7 @@ HTTP/SSE mode — `--upstream` triggers HTTP mode. `--bind` and `--port` default
 argos-proxy \
   --policy ./argos.toml \
   --audit-log ./audit.jsonl \
+  --agent code-review-agent \
   --upstream "https://mcp.internal.example.com" \
   --bind 127.0.0.1 \
   --port 8080 \
