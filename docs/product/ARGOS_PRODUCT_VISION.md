@@ -9,7 +9,7 @@
 
 ## 1. What Argos is
 
-Argos is the open infrastructure layer for AI agent security. It gives enterprise security teams the capability enforcement, runtime governance, and tamper-evident audit trail they need to deploy MCP-connected AI agents safely — without sending a single byte of their data to a third party.
+Argos is the open infrastructure layer for AI agent security. It gives developers and enterprise security teams the capability enforcement, runtime governance, and tamper-evident audit trail they need to run MCP-connected AI agents safely — without sending a single byte of their data to a third party.
 
 The FOSS proxy establishes Argos as the default standard — the way Falco became the standard for container runtime security and OPA became the standard for policy enforcement. The Argos OS raises the ceiling to what no userspace tool can offer: structural enforcement of the data/instruction separation problem at the kernel level. The SaaS control plane, built on top of the OS, converts that standard into a sustainable business.
 
@@ -37,7 +37,21 @@ See `ARGOS_V01_IDEA.md` Section 2 for the full problem statement. In summary:
 
 #### 3.1 Customer Segments
 
-**Segment 1 — AppSec lead / platform security engineer (primary)**
+**Segment 0 — Developer / agentic AI enthusiast (FOSS growth driver)**
+
+The individual running AI agents locally — Claude Code, Roo Code, GitHub Copilot agent, Goose,
+or open-source agentic frameworks. They are excited about what agents can do but concerned about
+what they might accidentally do. They are not security professionals; they want structural safety
+with minimal friction. They are the first adopters who generate GitHub stars, blog posts, and
+community tutorials — the social proof that Segment 1 later uses to justify enterprise evaluation.
+
+- Size: every developer currently using an AI coding assistant or agentic framework (millions globally, growing fast)
+- Reach: GitHub, Hacker News, dev communities, framework documentation
+- What they need: a simple drop-in safety net with a human-readable policy format and zero friction to install
+- How they're reached: FOSS discovery — they find Argos through search, peers, or framework docs
+- Their value to Argos: they create the organic adoption flywheel that enterprise sales depends on
+
+**Segment 1 — AppSec lead / platform security engineer (enterprise adoption)**
 
 The person who integrates Argos. They evaluate FOSS tools, file the GitHub issues, write the integration PRs, and make the internal case for adoption. They gate the CISO's sign-off by solving the technical and trust problems first.
 
@@ -66,6 +80,22 @@ Teams building on top of LangChain, AutoGen, LlamaIndex, or building internal ag
 ---
 
 #### 3.2 Value Propositions
+
+**For Segment 0 (developer / enthusiast) — FOSS core:**
+
+> Drop `argos-proxy` between your AI agent and your MCP server. Write five lines of policy. Your agent can no longer touch anything you haven't explicitly permitted — and you have a full record of everything it tried.
+
+Pain relievers:
+
+- Structural safety without needing to understand security engineering
+- Deny-by-default means the worst case is the agent is blocked, not that it did something irreversible
+- Human-readable TOML policy — readable and writable without documentation
+
+Gain creators:
+
+- Audit log gives full visibility into what the agent actually did, not just what it claimed
+- Works with every MCP client the developer already uses (Claude Code, Roo Code, Goose, Copilot)
+- Zero friction: single binary, no daemon, no account, no cloud
 
 **For Segment 1 (AppSec / platform engineer) — FOSS core:**
 
@@ -240,6 +270,8 @@ As a one-person project, cost discipline is existential. All costs are either fo
 **Phase 1 — Establish the standard (v0.1–v0.3):**
 
 - Build and ship the FOSS MCP security proxy (argos-proxy) — see `ARGOS_V01_IDEA.md`
+- Target developer tooling first: Claude Code, Roo Code, GitHub Copilot agent — where
+  security-aware developers encounter MCP daily and will adopt a proxy naturally
 - Evolve the TOML policy format toward a full capability DSL
 - Track and respond to MCP ecosystem CVEs publicly — become the voice of MCP security
 - Write extensively about MCP security: blog posts, OWASP contributions, conference talks
@@ -273,7 +305,7 @@ As a one-person project, cost discipline is existential. All costs are either fo
 **MCP ecosystem:**
 
 - Anthropic (MCP protocol owner) — alignment with their security guidance increases credibility
-- Microsoft (GitHub MCP, VS Code Copilot) — integration with their tooling reaches the largest enterprise developer base
+- Microsoft (GitHub Copilot agent, VS Code) — integration with their tooling reaches the largest enterprise developer base; GitHub Copilot is a primary v0.1 deployment target alongside Claude Code and Roo Code
 - These are not formal partnerships initially — they are community relationships earned through security research contributions
 
 **Standards bodies:**
@@ -303,7 +335,7 @@ As a one-person project, cost discipline is existential. All costs are either fo
 
 - Gartner predicts GenAI TRiSM market consolidation by end of 2026. F5/CalypsoAI, Check Point/Lakera, SentinelOne/Prompt Security have already demonstrated the M&A pattern.
 - *Threat:* a major vendor (Palo Alto, CrowdStrike, Wiz) builds or acquires an MCP security layer, commoditising the core.
-- *Defence:* the FOSS standard, once established, is not acquirable. HashiCorp showed this works; it also showed its limits when they moved to BSL. Argos should use Apache 2.0 or MIT — no licence switching risk.
+- *Defence:* the FOSS standard, once established, is not acquirable. HashiCorp showed this works; it also showed its limits when they moved to BSL. Argos is licensed under **AGPL-3.0** with a dual commercial license — network copyleft prevents competing SaaS forks from consuming the proxy without reciprocal contribution, while the commercial license path preserves enterprise adoption. This is not a BSL-style bait-and-switch: the AGPL core is permanently open. The commercial license is an additive option for proprietary embedders, not a restriction on FOSS users.
 - *Opportunity:* consolidation validates the market and drives enterprise urgency. Being the open standard before consolidation is the only defensible position that doesn't depend on being acquired.
 
 **Market forces:**
@@ -501,7 +533,8 @@ construction.* Strong, defensible, and something no current vendor can claim.
 **6 months (post v0.1 ship):**
 
 - 500+ GitHub stars
-- 3+ enterprise security teams using argos-proxy in production or evaluation
+- 3+ enterprise security teams using argos-proxy in production or evaluation (Claude Code,
+  Roo Code, or GitHub Copilot deployments)
 - Referenced in at least one OWASP LLM Top 10 discussion or community contribution
 - v0.2 shipped with DSL improvements informed by real user feedback
 
