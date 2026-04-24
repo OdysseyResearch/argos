@@ -29,16 +29,19 @@ alternative exists.
 ## What Argos does
 
 Argos is a transparent proxy that sits between any MCP client and any MCP server. For every
-incoming tool call it:
+intercepted tool call or resource access it:
 
-1. Evaluates the call against a TOML policy spec
+1. Evaluates the request against a TOML policy spec
 1. **Allows**, **blocks**, or **redacts** based on the policy decision
 1. Writes the decision to an append-only, Merkle-chained audit log
 
-Default posture: **deny by default**. Any tool call not explicitly permitted is blocked.
+Default posture: **deny by default**. Any request not explicitly permitted is blocked.
 
 It requires no changes to the MCP client or server. It is invisible to the agent unless a call
 is blocked.
+
+**Supported clients** — any MCP-compliant client works out of the box. Verified and documented:
+Claude Code, Roo Code, GitHub Copilot agent, Cursor, Windsurf, Continue.dev, OpenClaw, Goose.
 
 ## What it is not
 

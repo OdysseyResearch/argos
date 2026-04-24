@@ -222,6 +222,8 @@ in `examples/` should demonstrate loading a policy and evaluating a tool call.
 
 ### Edge Cases
 
+- What happens when `--policy` is omitted entirely? The proxy must exit with code 1 and a
+  human-readable error — identical to the file-missing case. There is no default policy path.
 - What happens when the policy file is missing or unparseable at startup? The proxy must exit
   with a clear, non-zero error code and a human-readable message — it must not start with no
   policy.
@@ -278,6 +280,11 @@ in `examples/` should demonstrate loading a policy and evaluating a tool call.
 - Q: What is the stderr output contract in stdio mode? → A: Option A — stdout is exclusively MCP protocol (zero non-protocol bytes permitted); stderr carries all operator-facing output as human-readable plaintext. Safety-critical messages (startup confirmation, policy loaded, dry-run active warning, fatal errors) always appear on stderr regardless of flags. Verbose per-request trace logging is off by default and enabled with `--verbose`. This follows LSP/MCP convention: all target clients (Claude Code, VS Code, Roo Code) already capture stderr into their log panels.
 - Q: What is the graceful shutdown and exit code contract? → A: Option A — SIGTERM/SIGINT: drain in-flight requests, flush buffered audit entries to disk (ensure no audit gap at shutdown), then exit. Documented exit codes: 0 = clean shutdown, 1 = startup/policy error, 2 = audit write failure, 3 = upstream subprocess failure. B and C were rejected because immediate exit without draining leaves in-flight calls with no audit entry, breaking FR-009 at shutdown time.
 - Q: How does an operator configure the argument size truncation limit? → A: Option A — `--max-arg-bytes <N>` CLI flag, default 65536 (64KB), applied uniformly to all audit entries in the session. Policy meta override deferred to M2 to avoid mixing operational config into policy files and to keep the audit writer independent of the policy engine.
+
+### Session 2026-04-24 (gap fill)
+
+- Q: Is `--policy <path>` a required CLI flag or does it have a default? → A: Required flag — the proxy refuses to start if `--policy` is omitted, with a clear human-readable error. No default path. Consistent with `--audit-log` (also required, no default) — operators must make an explicit, conscious decision about which policy governs the session.
+- Q: How is the `agent` field in audit log entries populated? → A: Optional `--agent <name>` CLI flag; defaults to `"unknown"` if omitted. The operator labels the session at launch (e.g., `--agent claude-code`). No protocol interaction required — works identically in stdio and HTTP mode. Future MCP client identity negotiation (M2+) can populate this automatically without a schema change.
 
 ---
 
@@ -337,13 +344,16 @@ in `examples/` should demonstrate loading a policy and evaluating a tool call.
 - **FR-010**: Each audit log entry MUST be a single-line JSON object (JSONL format) containing:
   `timestamp`, `sequence`, `prev_hash`, `entry_hash`, `session_id`, `message_type`
   (`"tools/call"`, `"resources/read"`, `"resources/list"`, or `"resources/subscribe"`),
-  `decision`, `tool_or_resource`, `arguments`, `policy_rule_matched`, `reason`, `agent`,
-  `policy_version`, `org_id`, `tenant_id`.
+  `decision`, `tool_or_resource`, `arguments`, `policy_rule_matched`, `reason`, `agent`
+  (sourced from `--agent` flag, defaults to `"unknown"` — see FR-030), `policy_version`,
+  `org_id`, `tenant_id`.
 - **FR-011**: The `entry_hash` MUST be the SHA-256 hash of the raw JSON bytes of that entry
   (with the `entry_hash` field itself set to an empty string before hashing, or computed on the
   canonical form — the exact convention MUST be documented and tested).
 - **FR-012**: The `prev_hash` of the first entry in a new log file MUST be
   `sha256:0000000000000000000000000000000000000000000000000000000000000000` (64 hex zeros).
+- **FR-029**: `--policy <path>` is a required CLI flag with no default.
+- **FR-030**: `--agent <name>` is an optional CLI flag. When provided, its value is written to the `agent` field of every audit log entry in the session. When omitted, `agent` defaults to `"unknown"`. This is the sole source of agent identity in v0.1; automatic population from MCP client identity negotiation is deferred to M2. The proxy MUST refuse to start if the flag is omitted or if the specified file is missing or unparseable, with a clear human-readable error and exit code 1.
 - **FR-013**: `--audit-log <path>` is a required CLI flag with no default. The proxy MUST
   refuse to start if the flag is omitted or if the specified path is not writable. The log file
   is opened in append-only mode.
@@ -386,7 +396,7 @@ in `examples/` should demonstrate loading a policy and evaluating a tool call.
   bytes (status messages, warnings, logs) are permitted on stdout. All operator-facing output
   MUST go to stderr.
 - **FR-018b**: The following messages MUST always appear on stderr regardless of flags: (1)
-  startup confirmation including policy file path and mode; (2) "DRY RUN ACTIVE" warning when
+  startup confirmation including policy file path, agent name, and mode; (2) "DRY RUN ACTIVE" warning when
   `--dry-run` is set; (3) all fatal error messages with a human-readable description and
   non-zero exit. Per-request trace logging is suppressed by default and enabled with `--verbose`.
 
