@@ -1,7 +1,19 @@
 <!-- SPECKIT START -->
 
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+shell commands, and other important information, read the current plan:
+
+**Active feature plan**: `specs/001-mcp-proxy-mvp/plan.md`
+
+Supporting artifacts:
+
+- `specs/001-mcp-proxy-mvp/research.md` — technology decisions and rationale
+- `specs/001-mcp-proxy-mvp/data-model.md` — Rust types for all domain entities
+- `specs/001-mcp-proxy-mvp/quickstart.md` — getting started guide
+- `specs/001-mcp-proxy-mvp/contracts/cli.md` — CLI flags, exit codes, stderr contract
+- `specs/001-mcp-proxy-mvp/contracts/policy-format.md` — TOML policy schema
+- `specs/001-mcp-proxy-mvp/contracts/audit-log.md` — JSONL audit log schema and hash convention
+- `specs/001-mcp-proxy-mvp/contracts/library-api.md` — public crate API contract
 
 <!-- SPECKIT END -->
 
