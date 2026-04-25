@@ -126,7 +126,7 @@ index.
 ### Implementation for User Story 3
 
 - [ ] T034 [US3] Implement `verify` subcommand parsing in `src/cli/mod.rs`: `argos-proxy verify --audit-log <path>` as a clap subcommand distinct from the proxy mode (no `--policy` required for verify)
-- [ ] T035 [US3] Implement verification logic in `src/main.rs` (or `src/verify.rs`): read JSONL line-by-line, for each entry deserialise, set `entry_hash=""`, serialise to compact JSON, compute SHA-256, assert equals stored `entry_hash`; assert `prev_hash` equals previous entry's `entry_hash` (genesis: 64 zeros); print "Chain intact: N entries verified." or "Chain broken at entry M: <detail>" with exit code 0 / 1 respectively (SC-004, FR-011, FR-012)
+- [ ] T035 [US3] Implement verification logic in `src/main.rs`: read JSONL line-by-line, for each entry deserialise, set `entry_hash=""`, serialise to compact JSON, compute SHA-256, assert equals stored `entry_hash`; assert `prev_hash` equals previous entry's `entry_hash` (genesis: 64 zeros); print "Chain intact: N entries verified." or "Chain broken at entry M: <detail>" with exit code 0 / 1 respectively (SC-004, FR-011, FR-012)
 
 **Checkpoint**: `argos-proxy verify` correctly validates intact logs and detects any tampering
 
@@ -176,6 +176,7 @@ API surfaces are fully re-exported from `src/lib.rs`.
 - [ ] T043 Set `license = "AGPL-3.0-or-later"` in `Cargo.toml` and create `LICENSE` file at repo root
 - [ ] T044 [P] Run `cargo run --example basic_policy` end-to-end and confirm it exits cleanly with a readable audit entry in the temp file (SC-009)
 - [ ] T045 [P] Validate quickstart.md scenario: follow `specs/001-mcp-proxy-mvp/quickstart.md` step-by-step with a real `uvx mcp-server-filesystem` subprocess (if available) or a mock, confirm all commands work as documented
+- [ ] T046 [P] Update `README.md` with a Claude Code MCP config JSON block (stdio mode, argos-proxy wrapping mcp-server-filesystem) and a minimal three-rule policy file example — satisfies §9 criterion #14 (SC-006)
 
 ---
 

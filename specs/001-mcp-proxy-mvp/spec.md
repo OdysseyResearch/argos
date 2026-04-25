@@ -353,7 +353,7 @@ in `examples/` should demonstrate loading a policy and evaluating a tool call.
 - **FR-012**: The `prev_hash` of the first entry in a new log file MUST be
   `sha256:0000000000000000000000000000000000000000000000000000000000000000` (64 hex zeros).
 - **FR-029**: `--policy <path>` is a required CLI flag with no default.
-- **FR-030**: `--agent <name>` is an optional CLI flag. When provided, its value is written to the `agent` field of every audit log entry in the session. When omitted, `agent` defaults to `"unknown"`. This is the sole source of agent identity in v0.1; automatic population from MCP client identity negotiation is deferred to M2. The proxy MUST refuse to start if the flag is omitted or if the specified file is missing or unparseable, with a clear human-readable error and exit code 1.
+- **FR-030**: `--agent <name>` is an optional CLI flag. When provided, its value is written to the `agent` field of every audit log entry in the session. When omitted, `agent` defaults to `"unknown"`. This is the sole source of agent identity in v0.1; automatic population from MCP client identity negotiation is deferred to M2.
 - **FR-013**: `--audit-log <path>` is a required CLI flag with no default. The proxy MUST
   refuse to start if the flag is omitted or if the specified path is not writable. The log file
   is opened in append-only mode.
