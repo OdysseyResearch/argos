@@ -10,7 +10,7 @@ downstream crates can embed them without invoking the CLI.
 ## Public modules
 
 ```
-argos::policy   — PolicyEngine, PolicyFile, PolicyRule, PolicyDecision, PolicyError
+argos::policy   — PolicyEngine, PolicyRequest, PolicyFile, PolicyRule, PolicyDecision, PolicyError
 argos::audit    — AuditWriter, AuditEntry, AuditError
 argos::types    — MessageType, DecisionLabel, PolicyAction
 ```
@@ -35,11 +35,14 @@ Loads and validates a TOML policy file from `path`. Returns an error if:
 ### `PolicyEngine::evaluate`
 
 ```rust
-pub fn evaluate(&self, request: &McpRequest) -> PolicyDecision
+pub fn evaluate(&self, request: &PolicyRequest) -> PolicyDecision
 ```
 
-Evaluates a parsed MCP request against the loaded policy. Stateless — safe to call
+Evaluates a `PolicyRequest` against the loaded policy. Stateless — safe to call
 concurrently from multiple threads/tasks without external locking.
+
+`PolicyRequest` is the public input type — library users construct it directly without
+any knowledge of internal wire-protocol types (`McpRequest`, `McpFrame`).
 
 Returns one of:
 
@@ -97,7 +100,7 @@ Flushes the OS write buffer to disk. Call before process exit to guarantee no en
 ## Minimal usage example
 
 ```rust
-use argos::policy::{PolicyEngine, PolicyDecision};
+use argos::policy::{PolicyEngine, PolicyRequest, PolicyDecision};
 use argos::audit::{AuditWriter, AuditEntry};
 use argos::types::{MessageType, DecisionLabel};
 use std::path::Path;
@@ -117,8 +120,11 @@ async fn main() -> anyhow::Result<()> {
         engine.version(),
     )?;
 
-    // Evaluate a synthetic request
-    let request = McpRequest::tool_call("read_file", serde_json::json!({ "path": "/workspace/main.rs" }));
+    // Construct a policy request — no wire-protocol knowledge required
+    let request = PolicyRequest::Tool {
+        name: "read_file".to_string(),
+        arguments: serde_json::json!({ "path": "/workspace/main.rs" }),
+    };
     let decision = engine.evaluate(&request);
 
     // Write audit entry
