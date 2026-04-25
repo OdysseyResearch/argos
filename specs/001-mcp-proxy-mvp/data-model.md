@@ -84,6 +84,28 @@ pub enum PolicyDecision {
 `rule_id` is the 0-based index of the matched rule in `PolicyFile.rules` (for audit logging).
 `DenyByDefault` is the implicit deny when no rule matches.
 
+### `PolicyRequest` — **public**
+
+```rust
+/// Public input type for `PolicyEngine::evaluate`. Encapsulates only what the
+/// policy engine needs — tool name + arguments, or resource URI. Internal
+/// wire-protocol types (`McpRequest`, `McpFrame`) are never exposed.
+#[derive(Debug, Clone)]
+pub enum PolicyRequest {
+    Tool {
+        name: String,
+        arguments: serde_json::Value,
+    },
+    Resource {
+        uri: String,
+    },
+}
+```
+
+`proxy::intercept()` converts the internal `McpRequest` into a `PolicyRequest` before
+calling `evaluate`. Library users construct `PolicyRequest` directly without any
+knowledge of Content-Length framing or JSON-RPC wire format.
+
 ### `PolicyEngine` — **public**
 
 ```rust
@@ -94,7 +116,7 @@ pub struct PolicyEngine {
 
 impl PolicyEngine {
     pub fn load(path: &Path) -> Result<Self, PolicyError>;
-    pub fn evaluate(&self, request: &McpRequest) -> PolicyDecision;
+    pub fn evaluate(&self, request: &PolicyRequest) -> PolicyDecision;
     pub fn version(&self) -> &str; // returns meta.version for audit entries
 }
 ```
