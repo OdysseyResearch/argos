@@ -72,7 +72,7 @@ appears in audit.jsonl with correct hash chain.
 - [ ] T019 [US1] Implement JSON-RPC blocked response in `src/proxy/mod.rs`: construct `{"jsonrpc":"2.0","id":<id>,"error":{"code":-32000,"message":"<reason>"}}`, encode with Content-Length framing, return to client without forwarding to upstream (FR-023)
 - [ ] T020 [US1] Implement malformed request handling in `src/proxy/mod.rs`: if JSON parse fails return JSON-RPC parse error `{"code":-32700,"message":"Parse error"}` (FR-024)
 - [ ] T021 [US1] Implement argument truncation in `src/proxy/mod.rs`: serialise arguments to string, if `len > max_arg_bytes` set `arguments = json!("<truncated>")` and `arguments_truncated = true`, otherwise log verbatim (FR-015)
-- [ ] T022 [US1] Implement subprocess spawn and stdio forwarding in `src/transport/stdio.rs`: `tokio::process::Command` with `stdin(Stdio::piped())`, `stdout(Stdio::piped())`; run two Tokio tasks — client→proxy→child and child→proxy→client — each decoding Content-Length frames, routing intercepted methods through `proxy::intercept()`, forwarding pass-through frames directly (FR-016, FR-018)
+- [ ] T022 [US1] Implement subprocess spawn and stdio forwarding in `src/transport/stdio.rs`: `tokio::process::Command` with `stdin(Stdio::piped())`, `stdout(Stdio::piped())`; run two Tokio tasks — client→proxy→child and child→proxy→client — each decoding Content-Length frames, routing intercepted methods through `proxy::intercept()`, forwarding pass-through frames directly; detect unexpected subprocess exit, log to stderr, terminate with exit code 3 (FR-016, FR-018)
 - [ ] T023 [US1] Implement graceful shutdown in `src/transport/stdio.rs`: `tokio_util::sync::CancellationToken`; register `tokio::signal::ctrl_c()` and `SIGTERM` (Unix) handlers to cancel the token; on cancellation stop accepting frames, `join_all` in-flight tasks, call `audit_writer.flush().await`, `process::exit(0)` (FR-018c)
 - [ ] T024 [US1] Implement stderr output contract in `src/main.rs` and `src/transport/stdio.rs`: startup confirmation line to stderr (policy path, agent, mode); fatal error → eprintln + exit; `--verbose` per-request trace to stderr; stdout carries zero non-protocol bytes in stdio mode (FR-018a, FR-018b)
 - [ ] T025 [US1] Wire `src/main.rs`: parse `CliArgs`, run startup validation, load `PolicyEngine`, open `AuditWriter`, generate `Uuid::new_v4()` session ID, create `ProxySession`, print startup confirmation to stderr, branch on transport mode (stdio vs HTTP)
@@ -80,7 +80,7 @@ appears in audit.jsonl with correct hash chain.
 
 ### Integration Test for User Story 1
 
-- [ ] T027 [US1] Write end-to-end stdio integration test in `tests/stdio_proxy.rs`: spawn a minimal mock MCP server binary (or use a `tokio::process` echo server), invoke `argos-proxy` with a two-rule policy (allow `read_file`, block everything else), send allow/block/redact/dry-run `tools/call` frames over stdio, assert upstream receives allowed calls, blocked calls return JSON-RPC error, every decision appears in audit.jsonl, audit chain verifies (SC-008)
+- [ ] T027 [US1] Write end-to-end stdio integration test in `tests/stdio_proxy.rs`: spawn a minimal mock MCP server binary (or use a `tokio::process` echo server), invoke `argos-proxy` with a policy covering both tool and resource rules, send allow/block/redact/dry-run `tools/call` frames AND at least one allowed and one blocked `resources/read` request over stdio, assert upstream receives allowed calls, blocked calls return JSON-RPC error, every decision appears in audit.jsonl, audit chain verifies (SC-008, FR-017, FR-008a)
 
 **Checkpoint**: US1 fully functional — stdio proxy enforces policy, writes tamper-evident audit log, exits cleanly on signal
 
@@ -170,7 +170,7 @@ API surfaces are fully re-exported from `src/lib.rs`.
 
 **Purpose**: Validation of non-functional success criteria and documentation accuracy.
 
-- [ ] T040 [P] Verify static binary build: `cargo build --release --target x86_64-unknown-linux-musl` (or equivalent musl target) produces a single self-contained binary with no dynamic library dependencies; confirm with `ldd target/.../argos-proxy` (SC-010)
+- [ ] T040 [P] Verify static binary build: `cargo build --release --target x86_64-unknown-linux-musl` (or equivalent musl target) produces a single self-contained binary with no dynamic library dependencies; confirm with `ldd target/.../argos-proxy`; confirm no outbound network calls are made during normal proxy operation (SC-010, SC-005)
 - [ ] T041 [P] Run full test suite and confirm 100% policy decision path coverage: `cargo test` must pass all tests including policy_engine.rs allow/block/redact/wildcard/deny-by-default paths (SC-007)
 - [ ] T042 [P] Measure stdio round-trip latency: in `tests/stdio_proxy.rs`, time 1000 consecutive allow-path round-trips through the proxy and assert median < 5ms (SC-001)
 - [ ] T043 Set `license = "AGPL-3.0-or-later"` in `Cargo.toml` and create `LICENSE` file at repo root
