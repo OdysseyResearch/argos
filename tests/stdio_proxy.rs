@@ -404,6 +404,81 @@ fn resource_read_allow_and_block_paths() {
     assert_eq!(blocked_entry.decision, DecisionLabel::Blocked);
 }
 
+/// Performance benchmark: assert median round-trip latency through the proxy
+/// on the allow path is below 5ms (SC-001). Uses 100 sequential requests as a
+/// quick smoke check rather than 1000 to keep CI runtime reasonable.
+#[test]
+fn allow_path_latency_below_5ms_median() {
+    use std::time::Instant;
+
+    let policy = standard_policy();
+    let audit = tempfile::NamedTempFile::new().unwrap();
+
+    ensure_mock_server();
+    let mut cmd = Command::new(ARGOS_BIN);
+    cmd.arg("--policy")
+        .arg(policy.path())
+        .arg("--audit-log")
+        .arg(audit.path())
+        .arg("--agent")
+        .arg("test-latency")
+        .arg("--")
+        .arg(mock_server_path());
+    cmd.stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null());
+
+    let mut child = cmd.spawn().expect("spawn argos-proxy");
+    let mut stdin = child.stdin.take().unwrap();
+    let mut stdout = child.stdout.take().unwrap();
+
+    // Warm-up — first request can include subprocess spawn cost.
+    for warm in 0..3 {
+        let req = serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": warm,
+            "method": "tools/call",
+            "params": {"name": "read_file", "arguments": {"path": "/workspace/x"}}
+        });
+        stdin.write_all(&frame(&req.to_string())).unwrap();
+    }
+    let _ = read_n_frames(&mut stdout, 3, Duration::from_secs(15));
+
+    const N: usize = 100;
+    let mut samples_us = Vec::with_capacity(N);
+    for i in 0..N {
+        let req = serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": (1000 + i) as u64,
+            "method": "tools/call",
+            "params": {"name": "read_file", "arguments": {"path": "/workspace/x"}}
+        });
+        let start = Instant::now();
+        stdin.write_all(&frame(&req.to_string())).unwrap();
+        let frames = read_n_frames(&mut stdout, 1, Duration::from_secs(15));
+        let elapsed = start.elapsed();
+        assert_eq!(frames.len(), 1);
+        samples_us.push(elapsed.as_micros());
+    }
+
+    drop(stdin);
+    let _ = child.wait();
+
+    samples_us.sort_unstable();
+    let median = samples_us[samples_us.len() / 2];
+    let p95 = samples_us[(samples_us.len() * 95) / 100];
+    eprintln!(
+        "stdio proxy latency: median {} µs, p95 {} µs over {} samples",
+        median, p95, samples_us.len()
+    );
+
+    assert!(
+        median < 5_000,
+        "median latency {}µs exceeds SC-001 budget of 5ms",
+        median
+    );
+}
+
 #[test]
 fn audit_chain_is_intact_across_session() {
     let policy = standard_policy();

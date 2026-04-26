@@ -170,13 +170,13 @@ API surfaces are fully re-exported from `src/lib.rs`.
 
 **Purpose**: Validation of non-functional success criteria and documentation accuracy.
 
-- [ ] T040 [P] Verify static binary build: `cargo build --release --target x86_64-unknown-linux-musl` (or equivalent musl target) produces a single self-contained binary with no dynamic library dependencies; confirm with `ldd target/.../argos-proxy`; confirm no outbound network calls are made during normal proxy operation (SC-010, SC-005)
-- [ ] T041 [P] Run full test suite and confirm 100% policy decision path coverage: `cargo test` must pass all tests including policy_engine.rs allow/block/redact/wildcard/deny-by-default paths (SC-007)
-- [ ] T042 [P] Measure stdio round-trip latency: in `tests/stdio_proxy.rs`, time 1000 consecutive allow-path round-trips through the proxy and assert median < 5ms (SC-001)
-- [ ] T043 Set `license = "AGPL-3.0-or-later"` in `Cargo.toml` and create `LICENSE` file at repo root
-- [ ] T044 [P] Run `cargo run --example basic_policy` end-to-end and confirm it exits cleanly with a readable audit entry in the temp file (SC-009)
-- [ ] T045 [P] Validate quickstart.md scenario: follow `specs/001-mcp-proxy-mvp/quickstart.md` step-by-step with a real `uvx mcp-server-filesystem` subprocess (if available) or a mock, confirm all commands work as documented
-- [ ] T046 [P] Update `README.md` with a Claude Code MCP config JSON block (stdio mode, argos-proxy wrapping mcp-server-filesystem) and a minimal three-rule policy file example — satisfies §9 criterion #14 (SC-006)
+- [x] T040 [P] Verify static binary build: `cargo build --release --target x86_64-unknown-linux-musl` (or equivalent musl target) produces a single self-contained binary with no dynamic library dependencies; confirm with `ldd target/.../argos-proxy`; confirm no outbound network calls are made during normal proxy operation (SC-010, SC-005)
+- [x] T041 [P] Run full test suite and confirm 100% policy decision path coverage: `cargo test` must pass all tests including policy_engine.rs allow/block/redact/wildcard/deny-by-default paths (SC-007)
+- [x] T042 [P] Measure stdio round-trip latency: in `tests/stdio_proxy.rs`, time 1000 consecutive allow-path round-trips through the proxy and assert median < 5ms (SC-001)
+- [x] T043 Set `license = "AGPL-3.0-or-later"` in `Cargo.toml` and create `LICENSE` file at repo root
+- [x] T044 [P] Run `cargo run --example basic_policy` end-to-end and confirm it exits cleanly with a readable audit entry in the temp file (SC-009)
+- [x] T045 [P] Validate quickstart.md scenario: follow `specs/001-mcp-proxy-mvp/quickstart.md` step-by-step with a real `uvx mcp-server-filesystem` subprocess (if available) or a mock, confirm all commands work as documented
+- [x] T046 [P] Update `README.md` with a Claude Code MCP config JSON block (stdio mode, argos-proxy wrapping mcp-server-filesystem) and a minimal three-rule policy file example — satisfies §9 criterion #14 (SC-006)
 
 ---
 

@@ -5,7 +5,9 @@ edition = "2021"
 rust-version = "1.77"
 license = "AGPL-3.0-or-later"
 description = "MCP security proxy — capability policy enforcement and tamper-evident audit logging"
-repository = "https://github.com/ogil109/argos"
+authors = ["Odyssey LLC"]
+repository = "https://github.com/OdysseyResearch/argos"
+homepage = "https://github.com/OdysseyResearch/argos"
 readme = "README.md"
 keywords = ["mcp", "security", "proxy", "policy", "audit"]
 categories = ["command-line-utilities", "development-tools"]
@@ -36,7 +38,7 @@ uuid = { version = "1", features = ["v4"] }
 clap = { version = "4", features = ["derive"] }
 axum = "0.7"
 http = "1"
-reqwest = { version = "0.12", features = ["json", "stream"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
 thiserror = "1"
 anyhow = "1"
 bytes = "1"
