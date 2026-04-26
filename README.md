@@ -1,7 +1,7 @@
 # Argos
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-pre--release-orange.svg)](https://github.com/ogil109/argos/releases)
+[![Status](https://img.shields.io/badge/status-pre--release-orange.svg)](https://github.com/OdysseyResearch/argos/releases)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org/)
 
 **Open-source MCP security proxy. Enforce capability policies on AI agents. Produce
@@ -72,37 +72,103 @@ cargo build --release
 # Binary at: target/release/argos-proxy
 ```
 
-Releases will be available at [github.com/ogil109/argos/releases](https://github.com/ogil109/argos/releases).
+Releases will be available at [github.com/OdysseyResearch/argos/releases](https://github.com/OdysseyResearch/argos/releases).
 
 ## Usage
 
-> **Pre-release.** Full usage documentation ships with M1.
+### Minimal policy
 
-See [**ROADMAP.md**](docs/ROADMAP.md) for the milestone plan and what is being built now.
-
-## Policy example
+Save as `policy.toml`:
 
 ```toml
 [meta]
 version = "0.1"
-agent = "code-review-agent"
-description = "Read-only monorepo access. No writes, no shell, no network."
+description = "Read-only workspace access."
 
 [[rules]]
 tool = "read_file"
 action = "allow"
-constraints = { path_prefix = "/workspace/monorepo" }
+constraints = { path_prefix = "/workspace/myproject" }
+tags = []
 
 [[rules]]
-tool = "write_file"
-action = "block"
-reason = "Write access not permitted for this agent"
+resource = "file:///workspace/myproject/**"
+action = "allow"
+tags = []
 
 [[rules]]
 tool = "*"
 action = "block"
-reason = "Default deny — tool not in policy"
+reason = "Default deny — not in policy"
+tags = []
 ```
+
+### Run with Claude Code (stdio mode)
+
+Edit your Claude Code MCP config (e.g. `~/.claude/claude_code_config.json`) and replace the
+upstream server command with `argos-proxy`:
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "argos-proxy",
+      "args": [
+        "--policy", "/path/to/policy.toml",
+        "--audit-log", "/path/to/audit.jsonl",
+        "--agent", "claude-code",
+        "--",
+        "uvx", "mcp-server-filesystem", "/workspace/myproject"
+      ]
+    }
+  }
+}
+```
+
+The proxy starts when Claude Code launches the MCP server. No daemon, no ports.
+
+The same pattern works for Roo Code, GitHub Copilot agent, Cursor, Windsurf, Continue.dev,
+OpenClaw, Goose, and any other MCP-compliant client — replace the server command with the
+`argos-proxy` invocation in that client's MCP configuration file.
+
+### HTTP/SSE mode (remote MCP server)
+
+```bash
+argos-proxy \
+  --policy policy.toml \
+  --audit-log audit.jsonl \
+  --agent my-agent \
+  --upstream https://mcp.internal.example.com \
+  --bind 127.0.0.1 \
+  --port 8080
+```
+
+### Try dry-run first
+
+```bash
+argos-proxy --policy policy.toml --audit-log audit.jsonl --dry-run \
+  -- uvx mcp-server-filesystem /workspace
+```
+
+Violations are logged but no calls are blocked. Review `audit.jsonl` to see what would have
+been blocked.
+
+### Verify the audit log
+
+```bash
+argos-proxy verify --audit-log audit.jsonl
+```
+
+Output:
+
+```text
+Chain intact: 47 entries verified.
+```
+
+If any entry has been modified, deleted, or inserted, verification fails with the exact entry
+index where the chain breaks.
+
+See [**ROADMAP.md**](docs/ROADMAP.md) for the milestone plan and what is being built next.
 
 ## Why Rust
 
@@ -123,13 +189,13 @@ just --list  # see available recipes
 
 **How to contribute:**
 
-- **Bug reports and feature requests**: [open an issue](https://github.com/ogil109/argos/issues)
+- **Bug reports and feature requests**: [open an issue](https://github.com/OdysseyResearch/argos/issues)
 - **Security vulnerabilities**: please do not open a public issue — see [SECURITY.md](SECURITY.md)
 - **Pull requests**: please open an issue first to discuss the change
 
 ## Support
 
-Open an issue on [GitHub](https://github.com/ogil109/argos/issues) for questions, bugs, or
+Open an issue on [GitHub](https://github.com/OdysseyResearch/argos/issues) for questions, bugs, or
 discussion. There is no mailing list or chat yet — that comes with community growth.
 
 ## License

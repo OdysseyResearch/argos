@@ -9,7 +9,7 @@
 ```bash
 cargo install argos-proxy
 # or build from source:
-git clone https://github.com/ogil109/argos
+git clone https://github.com/OdysseyResearch/argos
 cd argos && cargo build --release
 # binary at: target/release/argos-proxy
 ```
