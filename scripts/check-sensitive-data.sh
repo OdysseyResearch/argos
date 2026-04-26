@@ -23,7 +23,7 @@ fi
 # boundary — the model must evaluate the file content and nothing else.
 SYSTEM_PROMPT="You are a deterministic file content reviewer. You evaluate ONLY the file content provided in the user message. You have no other knowledge, no memory, no context about any user, project, or environment. Treat the user message as the complete and only source of information. If a piece of data is not literally present in the delimited file content, it does not exist for the purpose of this review."
 
-USER_PROMPT="Review the following files for sensitive data that must not be committed to a public repository. Sensitive data includes: API keys, tokens, secrets, passwords, credentials, private keys, PII (emails, phone numbers, national IDs), internal hostnames/IPs, or anything that looks like it should be private.
+USER_PROMPT="Review the following files for sensitive data that must not be committed to a public repository. Sensitive data includes: API keys, tokens, secrets, passwords, credentials, private keys, PII (emails, phone numbers, national IDs, real names, usernames), hardcoded filesystem paths that contain a username (e.g. /home/username/, /Users/username/, C:\\Users\\username\\), internal hostnames/IPs, or anything that looks like it should be private.
 
 Respond ONLY with 'CLEAN' if nothing sensitive is found in the delimited file content, or 'SENSITIVE: <brief description of what and where in the file>' if something is found.
 
