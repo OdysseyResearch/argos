@@ -29,9 +29,10 @@ pub(crate) struct McpFrame {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct SessionConfig {
+pub struct SessionConfig {
     pub dry_run: bool,
     pub max_arg_bytes: usize,
+    #[allow(dead_code)]
     pub agent: String,
 }
 
