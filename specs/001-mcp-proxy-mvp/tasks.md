@@ -97,14 +97,14 @@ output match US1 behaviour.
 
 ### Tests for User Story 2
 
-- [ ] T028 [P] [US2] Write HTTP integration test in `tests/http_proxy.rs`: start a mock upstream HTTP server (e.g., `axum` test server), invoke `argos-proxy` in HTTP mode, send allow/block/dry-run `tools/call` requests, assert correct forwarding/rejection and audit entries (SC-008)
+- [x] T028 [P] [US2] Write HTTP integration test in `tests/http_proxy.rs`: start a mock upstream HTTP server (e.g., `axum` test server), invoke `argos-proxy` in HTTP mode, send allow/block/dry-run `tools/call` requests, assert correct forwarding/rejection and audit entries (SC-008)
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Implement `axum` HTTP server in `src/transport/http.rs`: bind on `--bind`:`--port`, define catch-all route that reads request body, routes through `proxy::intercept()`, returns response
-- [ ] T030 [US2] Implement `reqwest` upstream client in `src/transport/http.rs`: forward allowed requests to `--upstream` URL; pipe `reqwest::Response::bytes_stream()` into `axum` streaming response body for SSE pass-through; response bytes pass through unmodified without evaluation
-- [ ] T031 [US2] Implement HTTP mode startup validation in `src/cli/mod.rs`: validate `--upstream` is a valid URL, `--tls-cert` and `--tls-key` files are readable (exit 1 if not), reject both `--upstream` and `server_command` together (FR-019, FR-020)
-- [ ] T032 [US2] Implement graceful shutdown for HTTP mode in `src/transport/http.rs`: `CancellationToken` cancels the axum listener; `join_all` in-flight request tasks; call `audit_writer.flush().await`; exit 0 (FR-018c)
+- [x] T029 [US2] Implement `axum` HTTP server in `src/transport/http.rs`: bind on `--bind`:`--port`, define catch-all route that reads request body, routes through `proxy::intercept()`, returns response
+- [x] T030 [US2] Implement `reqwest` upstream client in `src/transport/http.rs`: forward allowed requests to `--upstream` URL; pipe `reqwest::Response::bytes_stream()` into `axum` streaming response body for SSE pass-through; response bytes pass through unmodified without evaluation
+- [x] T031 [US2] Implement HTTP mode startup validation in `src/cli/mod.rs`: validate `--upstream` is a valid URL, `--tls-cert` and `--tls-key` files are readable (exit 1 if not), reject both `--upstream` and `server_command` together (FR-019, FR-020)
+- [x] T032 [US2] Implement graceful shutdown for HTTP mode in `src/transport/http.rs`: `CancellationToken` cancels the axum listener; `join_all` in-flight request tasks; call `audit_writer.flush().await`; exit 0 (FR-018c)
 
 **Checkpoint**: US1 + US2 both independently functional — same policy file, same audit log format, different transports
 
@@ -121,12 +121,12 @@ index.
 
 ### Tests for User Story 3
 
-- [ ] T033 [P] [US3] Extend `tests/audit_chain.rs` with tamper-detection tests: generate a 5-entry log, modify one byte of entry 3, verify that the verifier reports a chain break at entry 3; verify inserting a duplicate entry is detected (SC-004)
+- [x] T033 [P] [US3] Extend `tests/audit_chain.rs` with tamper-detection tests: generate a 5-entry log, modify one byte of entry 3, verify that the verifier reports a chain break at entry 3; verify inserting a duplicate entry is detected (SC-004)
 
 ### Implementation for User Story 3
 
-- [ ] T034 [US3] Implement `verify` subcommand parsing in `src/cli/mod.rs`: `argos-proxy verify --audit-log <path>` as a clap subcommand distinct from the proxy mode (no `--policy` required for verify)
-- [ ] T035 [US3] Implement verification logic in `src/main.rs`: read JSONL line-by-line, for each entry deserialise, set `entry_hash=""`, serialise to compact JSON, compute SHA-256, assert equals stored `entry_hash`; assert `prev_hash` equals previous entry's `entry_hash` (genesis: 64 zeros); print "Chain intact: N entries verified." or "Chain broken at entry M: <detail>" with exit code 0 / 1 respectively (SC-004, FR-011, FR-012)
+- [x] T034 [US3] Implement `verify` subcommand parsing in `src/cli/mod.rs`: `argos-proxy verify --audit-log <path>` as a clap subcommand distinct from the proxy mode (no `--policy` required for verify)
+- [x] T035 [US3] Implement verification logic in `src/main.rs`: read JSONL line-by-line, for each entry deserialise, set `entry_hash=""`, serialise to compact JSON, compute SHA-256, assert equals stored `entry_hash`; assert `prev_hash` equals previous entry's `entry_hash` (genesis: 64 zeros); print "Chain intact: N entries verified." or "Chain broken at entry M: <detail>" with exit code 0 / 1 respectively (SC-004, FR-011, FR-012)
 
 **Checkpoint**: `argos-proxy verify` correctly validates intact logs and detects any tampering
 
@@ -142,8 +142,8 @@ upstream receives the call AND audit log records `decision: "blocked"` with `dry
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Implement dry-run behaviour in `src/proxy/mod.rs`: when `session.config.dry_run == true` and decision is `Block` or `DenyByDefault`, forward call to upstream instead of returning error; set `entry.dry_run = Some(true)` in the audit entry; emit `eprintln!("DRY RUN VIOLATION: ...")` to stderr (FR-021)
-- [ ] T037 [US4] Implement dry-run startup warning in `src/main.rs`: if `--dry-run` active, print prominent `"WARNING: DRY RUN ACTIVE — policy violations will not be enforced"` to stderr before any traffic is processed (FR-022)
+- [x] T036 [US4] Implement dry-run behaviour in `src/proxy/mod.rs`: when `session.config.dry_run == true` and decision is `Block` or `DenyByDefault`, forward call to upstream instead of returning error; set `entry.dry_run = Some(true)` in the audit entry; emit `eprintln!("DRY RUN VIOLATION: ...")` to stderr (FR-021)
+- [x] T037 [US4] Implement dry-run startup warning in `src/main.rs`: if `--dry-run` active, print prominent `"WARNING: DRY RUN ACTIVE — policy violations will not be enforced"` to stderr before any traffic is processed (FR-022)
 
 **Checkpoint**: Dry-run mode observable — violations logged, traffic unblocked, stderr warnings prominent
 
@@ -159,8 +159,8 @@ API surfaces are fully re-exported from `src/lib.rs`.
 
 ### Implementation for User Story 5
 
-- [ ] T038 [US5] Verify and finalise `src/lib.rs` re-exports: `pub use crate::policy::{PolicyEngine, PolicyRequest, PolicyFile, PolicyRule, PolicyAction, PolicyDecision, PolicyError}; pub use crate::audit::{AuditWriter, AuditEntry, AuditError}; pub use crate::audit::types::{MessageType, DecisionLabel};` — `PolicyRequest` MUST be public; internal types (`McpRequest`, `McpFrame`, `ProxySession`) MUST NOT be re-exported (FR-026, FR-027)
-- [ ] T039 [US5] Implement `examples/basic_policy.rs`: load a `PolicyEngine` from a temp policy file, open an `AuditWriter` to a temp file, construct a `PolicyRequest::Tool { name, arguments }` (no `McpRequest` — library users never touch internal types), call `engine.evaluate(&request)`, construct and write an `AuditEntry` via `writer.write().await`, call `writer.flush().await`; must compile and run with `cargo run --example basic_policy` (SC-009)
+- [x] T038 [US5] Verify and finalise `src/lib.rs` re-exports: `pub use crate::policy::{PolicyEngine, PolicyRequest, PolicyFile, PolicyRule, PolicyAction, PolicyDecision, PolicyError}; pub use crate::audit::{AuditWriter, AuditEntry, AuditError}; pub use crate::audit::types::{MessageType, DecisionLabel};` — `PolicyRequest` MUST be public; internal types (`McpRequest`, `McpFrame`, `ProxySession`) MUST NOT be re-exported (FR-026, FR-027)
+- [x] T039 [US5] Implement `examples/basic_policy.rs`: load a `PolicyEngine` from a temp policy file, open an `AuditWriter` to a temp file, construct a `PolicyRequest::Tool { name, arguments }` (no `McpRequest` — library users never touch internal types), call `engine.evaluate(&request)`, construct and write an `AuditEntry` via `writer.write().await`, call `writer.flush().await`; must compile and run with `cargo run --example basic_policy` (SC-009)
 
 **Checkpoint**: `cargo build --lib` clean; `cargo run --example basic_policy` runs end-to-end; downstream crates can depend on `argos`
 

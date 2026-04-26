@@ -7,7 +7,7 @@ use bytes::{Buf, Bytes, BytesMut};
 use std::io;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::{Child, Command};
-use tokio::sync::Mutex;
+use tokio::sync::{mpsc, Mutex};
 use tokio_util::codec::{Decoder, Encoder};
 use tokio_util::sync::CancellationToken;
 
@@ -159,8 +159,27 @@ pub async fn run_stdio_proxy(
 
     let cancel = CancellationToken::new();
     let to_child = Arc::new(Mutex::new(child_stdin));
-    let to_client = Arc::new(Mutex::new(tokio::io::stdout()));
     let session_id = Arc::new(session_id);
+
+    // Single client-output channel. All writes to the proxy's stdout go through
+    // this channel — both block responses (from the request pipeline) and
+    // forwarded child output. The dedicated `client_writer` task drains the
+    // channel and writes each item atomically, eliminating any interleaving
+    // between concurrent block responses and forwarded child bytes.
+    let (out_tx, out_rx) = mpsc::unbounded_channel::<Vec<u8>>();
+
+    let client_writer = {
+        tokio::spawn(async move {
+            let mut rx = out_rx;
+            let mut stdout = tokio::io::stdout();
+            while let Some(bytes) = rx.recv().await {
+                if stdout.write_all(&bytes).await.is_err() {
+                    break;
+                }
+                let _ = stdout.flush().await;
+            }
+        })
+    };
 
     // Client → proxy → child: intercept on this direction. When client stdin
     // closes (EOF), this task closes the child's stdin (so the child sees
@@ -172,7 +191,7 @@ pub async fn run_stdio_proxy(
         let session_id = session_id.clone();
         let config = config.clone();
         let to_child_for_pump = to_child.clone();
-        let to_client = to_client.clone();
+        let out_tx = out_tx.clone();
         let cancel = cancel.clone();
 
         tokio::spawn(async move {
@@ -180,7 +199,7 @@ pub async fn run_stdio_proxy(
             let result = pump_with_intercept(
                 stdin,
                 to_child_for_pump,
-                to_client,
+                out_tx,
                 engine,
                 audit,
                 session_id,
@@ -189,19 +208,22 @@ pub async fn run_stdio_proxy(
             )
             .await;
             // Close child's stdin so it sees EOF and shuts down cleanly.
-            // We hold the mutex briefly and shut down the underlying handle.
             let mut guard = to_child.lock().await;
             let _ = guard.shutdown().await;
             result
         })
     };
 
-    // Child → proxy → client: pure forwarding, no audit (responses).
+    // Child → proxy → client: parse complete Content-Length frames before
+    // forwarding so chunk boundaries don't interleave with block responses.
     let child_to_client = {
-        let to_client = to_client.clone();
+        let out_tx = out_tx.clone();
         let cancel = cancel.clone();
-        tokio::spawn(async move { pump_raw(child_stdout, to_client, cancel).await })
+        tokio::spawn(async move { pump_framed(child_stdout, out_tx, cancel).await })
     };
+
+    // Drop the original handle so the writer exits when both producers do.
+    drop(out_tx);
 
     // Wait for shutdown trigger or natural completion of the child process.
     let shutdown_signal = wait_for_shutdown_signal(cancel.clone());
@@ -213,16 +235,20 @@ pub async fn run_stdio_proxy(
             None
         }
         res = child.wait() => {
-            // Cancel after a brief grace period to let child_to_client drain
-            // any final response bytes from the now-closed child stdout.
+            // Child exited naturally. Do NOT cancel: child_to_client should
+            // drain on its own once the child's stdout closes (read returns 0).
+            // Cancelling here would race against in-flight response bytes.
             Some(res)
         }
     };
 
-    // Drain in-flight forwarders.
+    // Drain in-flight forwarders. client_to_child should already be done
+    // (we only get here once stdin closed → child stdin closed → child exited).
     let _ = client_to_child.await;
-    cancel.cancel();
     let _ = child_to_client.await;
+    // Once both producers have dropped their out_tx clones, the channel is
+    // closed and client_writer will drain remaining messages then exit.
+    let _ = client_writer.await;
     audit.flush().await?;
 
     if let Some(res) = upstream_status {
@@ -273,7 +299,7 @@ async fn wait_for_shutdown_signal(cancel: CancellationToken) {
 async fn pump_with_intercept<R>(
     mut reader: R,
     to_child: Arc<Mutex<tokio::process::ChildStdin>>,
-    to_client: Arc<Mutex<tokio::io::Stdout>>,
+    out_tx: mpsc::UnboundedSender<Vec<u8>>,
     engine: Arc<PolicyEngine>,
     audit: Arc<AuditWriter>,
     session_id: Arc<String>,
@@ -315,10 +341,7 @@ where
                         })?;
                     }
                     InterceptOutcome::BlockResponse(f) => {
-                        let bytes = frame_to_wire_bytes(&f.body);
-                        let mut out = to_client.lock().await;
-                        out.write_all(&bytes).await?;
-                        out.flush().await?;
+                        let _ = out_tx.send(frame_to_wire_bytes(&f.body));
                     }
                 }
                 continue;
@@ -341,17 +364,35 @@ where
     }
 }
 
-/// Forward upstream child output to the client without policy evaluation.
-async fn pump_raw<R>(
+/// Read framed messages from the upstream child's stdout and send each
+/// complete frame to the client output channel as a single message. This
+/// guarantees frames cannot be interleaved with block responses written by
+/// the request-side pump.
+async fn pump_framed<R>(
     mut reader: R,
-    to_client: Arc<Mutex<tokio::io::Stdout>>,
+    out_tx: mpsc::UnboundedSender<Vec<u8>>,
     cancel: CancellationToken,
 ) -> Result<(), AppError>
 where
     R: tokio::io::AsyncRead + Unpin,
 {
+    let mut buf = BytesMut::with_capacity(8192);
+    let mut codec = ContentLengthCodec::default();
     let mut chunk = vec![0u8; 4096];
+
     loop {
+        match codec.decode(&mut buf) {
+            Ok(Some(frame)) => {
+                let _ = out_tx.send(frame_to_wire_bytes(&frame.body));
+                continue;
+            }
+            Ok(None) => {}
+            Err(e) => {
+                eprintln!("argos: malformed wire data from upstream: {e}");
+                return Ok(());
+            }
+        }
+
         let n = tokio::select! {
             r = reader.read(&mut chunk) => r?,
             _ = cancel.cancelled() => return Ok(()),
@@ -359,9 +400,7 @@ where
         if n == 0 {
             return Ok(());
         }
-        let mut out = to_client.lock().await;
-        out.write_all(&chunk[..n]).await?;
-        out.flush().await?;
+        buf.extend_from_slice(&chunk[..n]);
     }
 }
 
