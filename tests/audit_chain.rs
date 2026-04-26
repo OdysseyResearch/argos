@@ -106,6 +106,71 @@ async fn sequential_entries_chain_correctly() {
 }
 
 #[tokio::test]
+async fn verify_subcommand_accepts_intact_log() {
+    let tmp = tempfile::NamedTempFile::new().unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    for _ in 0..5 {
+        writer
+            .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
+            .await
+            .unwrap();
+    }
+    writer.flush().await.unwrap();
+
+    argos::verify::verify_audit_log(tmp.path()).expect("intact chain must verify");
+}
+
+#[tokio::test]
+async fn verify_subcommand_detects_modified_entry() {
+    let tmp = tempfile::NamedTempFile::new().unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    for _ in 0..5 {
+        writer
+            .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
+            .await
+            .unwrap();
+    }
+    writer.flush().await.unwrap();
+    drop(writer); // ensure BufWriter is fully flushed before mutating
+
+    // Modify entry 2's `tool_or_resource` field, recompute nothing else, write
+    // back. The verifier must detect either the entry_hash mismatch or the
+    // chain break at the modified position.
+    let original = std::fs::read_to_string(tmp.path()).unwrap();
+    let mut lines: Vec<String> = original.lines().map(String::from).collect();
+    let mut parsed: serde_json::Value = serde_json::from_str(&lines[2]).unwrap();
+    parsed["tool_or_resource"] = serde_json::Value::String("write_file".to_string());
+    lines[2] = serde_json::to_string(&parsed).unwrap();
+    std::fs::write(tmp.path(), lines.join("\n") + "\n").unwrap();
+
+    let result = argos::verify::verify_audit_log(tmp.path());
+    assert!(result.is_err(), "tampered chain must fail verification");
+}
+
+#[tokio::test]
+async fn verify_subcommand_detects_truncated_log() {
+    let tmp = tempfile::NamedTempFile::new().unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    for _ in 0..3 {
+        writer
+            .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
+            .await
+            .unwrap();
+    }
+    writer.flush().await.unwrap();
+    drop(writer);
+
+    // Removing an entry in the middle breaks the chain.
+    let original = std::fs::read_to_string(tmp.path()).unwrap();
+    let mut lines: Vec<String> = original.lines().map(String::from).collect();
+    lines.remove(1);
+    std::fs::write(tmp.path(), lines.join("\n") + "\n").unwrap();
+
+    let result = argos::verify::verify_audit_log(tmp.path());
+    assert!(result.is_err(), "log with deleted entry must fail verification");
+}
+
+#[tokio::test]
 async fn tampering_with_an_entry_breaks_the_chain() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
     let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();

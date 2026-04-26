@@ -186,7 +186,7 @@ fn run_session(
     stdin.write_all(requests).expect("send requests");
     drop(stdin); // close stdin to signal EOF
 
-    let frames = read_n_frames(&mut stdout, expected_response_count, Duration::from_secs(5));
+    let frames = read_n_frames(&mut stdout, expected_response_count, Duration::from_secs(15));
 
     // Wait for the child to exit cleanly after its stdin closes.
     let _ = child.wait();

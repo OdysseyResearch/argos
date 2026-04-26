@@ -87,6 +87,8 @@ dependencies = [
  "clap",
  "futures-util",
  "globset",
+ "http",
+ "libc",
  "reqwest",
  "serde",
  "serde_json",
