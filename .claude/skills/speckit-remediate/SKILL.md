@@ -57,7 +57,9 @@ Close the loop between diagnosis and repair. `/speckit-pr-review` and `/speckit-
 
 ### 1. Initialize Context
 
-Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root. Parse for `FEATURE_DIR`. Derive:
+Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and attempt to parse JSON for `FEATURE_DIR`.
+
+**If the script succeeds**, derive full artifact paths:
 
 - `SPEC` = `FEATURE_DIR/spec.md`
 - `PLAN` = `FEATURE_DIR/plan.md`
@@ -65,7 +67,16 @@ Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --inclu
 - `CONTRACTS_DIR` = `FEATURE_DIR/contracts/`
 - `CONSTITUTION` = `.specify/memory/constitution.md`
 
-Load the constitution's MUST clauses and architecture constraints — these are the guardrails every proposed fix is checked against.
+Spec conformance checks in step 6 run in full.
+
+**If the script fails due to branch naming** (error message references feature branch format), enter **reduced mode**:
+
+- Load `CONSTITUTION` = `.specify/memory/constitution.md` only.
+- Spec artifact loading is skipped; constitution guards still apply to every proposed fix.
+- Finding sourcing (step 3) and all fix application steps work normally — spec-grounded constraint checks are limited to the constitution only.
+- Print a visible notice: *"Reduced mode: non-speckit branch — spec conformance checks limited to constitution."*
+
+**If `.specify/` is missing entirely**, abort with: *"No .specify/ directory found. Is this a speckit project?"*
 
 ### 2. Detect Provider
 
