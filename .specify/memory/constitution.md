@@ -1,28 +1,24 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.1.0 → 1.2.0 (MINOR — license changed from Apache 2.0 to AGPL-3.0,
-dual commercial license added to Principle III rationale)
-
-Principles added:
-  VII. Three-Phase Strategy
-
-Principles modified:
-  IV.  Future Compatibility — roadmap reference updated from ARGOS_PRODUCT_VISION.md §5
-                              to docs/ROADMAP.md
-  V.   Architectural Honesty — "v0.5+" replaced with milestone ID M5
+Version change: 1.2.0 → 1.2.1 (PATCH — merge strategy rule added to Development Workflow)
 
 Sections modified:
-  - Architecture Constraints — stale §7/§8 reference fixed, version numbers replaced
-    with milestone IDs (v0.4 → M4, v1.1 → M7)
+  - Development Workflow — added rule requiring true merge commits for PRs; squash and
+    rebase-only merges are prohibited to preserve non-linear commit history
 
 Templates updated:
-  ✅ .specify/templates/plan-template.md — no changes required (gates still valid)
+  ✅ .specify/templates/plan-template.md — no changes required
   ✅ CLAUDE.md — no changes required
   ✅ .specify/templates/spec-template.md — no changes required
   ✅ .specify/templates/tasks-template.md — no changes required
 
 Deferred items: none
+
+---
+
+Previous amendment (1.1.0 → 1.2.0): license changed from Apache 2.0 to AGPL-3.0,
+dual commercial license added to Principle III rationale; Principle VII added.
 -->
 
 # Argos Constitution
@@ -166,6 +162,9 @@ OS-level integration — the library crate requirement already supports this tra
   `docs/product/ARGOS_V01_IDEA.md` §13 before implementation begins.
 - Security-critical paths (policy engine, audit writer, transport adapters) require self-review
   against Principles I, II, V, and VI before any PR is considered complete.
+- PRs MUST be merged with a true merge commit (no squash, no rebase-only). Non-linear commit
+  history MUST be preserved in the repository so that individual commits remain reachable and
+  reviewable after merge.
 - Milestone status is tracked in `docs/ROADMAP.md` — the single source of truth for sequencing
   and current progress.
 
@@ -183,4 +182,4 @@ Use `CLAUDE.md` for runtime development guidance (read by the AI assistant on ev
 Use `docs/product/` for product strategy and vision documents.
 Use `docs/ROADMAP.md` for milestone sequencing and current status.
 
-**Version**: 1.2.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-23
+**Version**: 1.2.1 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-27
