@@ -125,8 +125,32 @@ async fn main() -> anyhow::Result<()> {
     };
     let decision = engine.evaluate(&request);
 
-    // Write audit entry
-    let entry = AuditEntry::from_decision(&request, &decision, &session_id.to_string(), "my-agent", engine.version());
+    // Write audit entry — construct AuditEntry directly (no from_decision convenience method)
+    let (decision_label, reason) = match &decision {
+        PolicyDecision::Allow { .. } => (DecisionLabel::Allowed, None),
+        PolicyDecision::Block { reason, .. } => (DecisionLabel::Blocked, Some(reason.clone())),
+        PolicyDecision::Redact { .. } => (DecisionLabel::Redacted, None),
+        PolicyDecision::DenyByDefault => (DecisionLabel::Blocked, Some("deny by default".into())),
+    };
+    let entry = AuditEntry {
+        timestamp: chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.6fZ").to_string(),
+        sequence: 0,
+        prev_hash: String::new(),
+        entry_hash: String::new(),
+        session_id: session_id.to_string(),
+        message_type: MessageType::ToolsCall,
+        decision: decision_label,
+        tool_or_resource: "read_file".to_string(),
+        arguments: serde_json::json!({ "path": "/workspace/main.rs" }),
+        arguments_truncated: false,
+        policy_rule_matched: None,
+        reason,
+        agent: "my-agent".to_string(),
+        policy_version: engine.version().to_string(),
+        org_id: None,
+        tenant_id: None,
+        dry_run: None,
+    };
     writer.write(entry).await?;
     writer.flush().await?;
 
