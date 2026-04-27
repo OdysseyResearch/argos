@@ -1,11 +1,14 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.2.0 → 1.2.1 (PATCH — merge strategy rule added to Development Workflow)
+Version change: 1.2.0 → 1.3.0 (cumulative: PATCH 1.2.1 merge-strategy rule + MINOR 1.3.0 no-PII rule)
 
 Sections modified:
   - Development Workflow — added rule requiring true merge commits for PRs; squash and
-    rebase-only merges are prohibited to preserve non-linear commit history
+    rebase-only merges are prohibited to preserve non-linear commit history (1.2.1)
+  - Development Workflow — expanded sensitive-data scan rule to explicitly prohibit PII
+    (home directory paths, emails, real names, usernames) in committed files; clarified
+    that the pre-commit hook's LLM prompt is the authoritative definition (1.3.0)
 
 Templates updated:
   ✅ .specify/templates/plan-template.md — no changes required
@@ -156,8 +159,12 @@ OS-level integration — the library crate requirement already supports this tra
   → `/speckit-tasks` → `/speckit-implement`.
 - Features begin on a dedicated branch created with `/speckit-git-feature`.
 - All commits MUST follow Conventional Commits, enforced by the commitizen pre-commit hook.
-- All commits touching `docs/`, `.claude/`, or `.specify/` are scanned for sensitive data by the
-  Claude pre-commit hook before merge. This project is developed in public.
+- All commits are scanned for sensitive data by the Claude pre-commit hook before merge.
+  This project is developed in public. No personally identifiable information (PII) may appear
+  in any committed file: this includes home directory paths (`/home/<user>/`, `/Users/<user>/`),
+  email addresses, real names, and usernames. Public project identifiers (GitHub org name, public
+  URLs) are exempt. The pre-commit hook's LLM prompt is the authoritative definition of what
+  counts as sensitive — update it when new PII categories are identified.
 - Every spec MUST include a validation pass against the 10 compatibility constraints in
   `docs/product/ARGOS_V01_IDEA.md` §13 before implementation begins.
 - Security-critical paths (policy engine, audit writer, transport adapters) require self-review
@@ -182,4 +189,4 @@ Use `CLAUDE.md` for runtime development guidance (read by the AI assistant on ev
 Use `docs/product/` for product strategy and vision documents.
 Use `docs/ROADMAP.md` for milestone sequencing and current status.
 
-**Version**: 1.2.1 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-27
+**Version**: 1.3.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-27

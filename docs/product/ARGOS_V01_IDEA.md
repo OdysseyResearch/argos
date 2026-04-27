@@ -23,7 +23,7 @@ The relationship between the two documents is explicit:
 
 ## 1. The one-line pitch
 
-Argos is an open-source MCP security proxy written in Rust that lets enterprise security teams enforce capability policies on AI agents and produce tamper-evident audit trails — without sending a single byte of data to a third party.
+Argos is an open-source MCP security proxy written in Rust that lets developers and security teams enforce capability policies on AI agents and produce tamper-evident audit trails — without sending a single byte of data to a third party.
 
 ---
 
@@ -57,7 +57,7 @@ Argos is a transparent proxy that sits between any MCP client and any MCP server
 4. **Writes every decision to a tamper-evident audit log** (append-only, Merkle-chained JSON)
 5. **Passes allowed calls through** to the upstream MCP server with zero observable latency impact for the agent
 
-It operates at the MCP transport layer — stdio for local clients (Claude Desktop, Cursor), HTTP/SSE for remote server connections. It requires no changes to the MCP client or server. It is invisible to the agent unless a call is blocked.
+It operates at the MCP transport layer — stdio for local clients (Claude Code, Roo Code, GitHub Copilot agent), HTTP/SSE for remote server connections. It requires no changes to the MCP client or server. It is invisible to the agent unless a call is blocked.
 
 ---
 
@@ -65,15 +65,35 @@ It operates at the MCP transport layer — stdio for local clients (Claude Deskt
 
 See `ARGOS_PRODUCT_VISION.md` Section 3.1 for the full customer segment analysis.
 
-**Primary persona for v0.1: AppSec lead / platform security engineer**
+v0.1 has two co-primary personas. FOSS adoption is driven by Persona A; enterprise conversion
+is driven by Persona B.
 
-The person who integrates Argos. Their job is to make AI agent deployments safe enough to get the CISO's sign-off without becoming a deployment bottleneck.
+**Persona A — Developer / agentic AI enthusiast (co-primary, drives FOSS growth)**
+
+An individual running AI agents locally — Claude Code, Roo Code, GitHub Copilot agent, Goose,
+or open-source agentic frameworks. They are excited about what agents can do but uneasy about
+what they might accidentally do: touch files outside the project, overwrite something, exfiltrate
+credentials. They are not security engineers and have no compliance requirement. They want
+structural peace of mind with minimal friction.
+
+- Cares about: does it work out of the box, is the policy format simple, will it break my agent
+- Emotional job: try new agentic tools without fear of something going badly wrong
+- Blocker they face: no easy way to put a safety net around an AI agent without deep security knowledge
+- Path to Argos: GitHub, Hacker News, developer communities, word of mouth
+
+**Persona B — AppSec lead / platform security engineer (co-primary, drives enterprise adoption)**
+
+The person who integrates Argos organisation-wide. Their job is to make AI agent deployments
+safe enough to get the CISO's sign-off without becoming a deployment bottleneck.
 
 - Cares about: does it work, how does it integrate, can I trust the code, will it break things
 - Emotional job: reduce the anxiety of not knowing what an agent just did with prod credentials
 - Blocker they face: every new agent deployment is a one-off security review with no standard contract
+- Path to Argos: security conferences, OWASP, peer networks, Persona A adoption creating social proof
 
-**v0.1 does not attempt to serve the CISO directly.** The CISO (Segment 2) is served by the SaaS control plane in v1.1+. However, v0.1's audit log and policy spec format must be designed to produce the evidence the CISO will eventually need — this is captured in Section 13.
+**v0.1 does not attempt to serve the CISO directly.** The CISO (Segment 2) is served by the
+SaaS control plane in v1.1+. However, v0.1's audit log and policy spec format must be designed
+to produce the evidence the CISO will eventually need — this is captured in Section 13.
 
 ---
 
@@ -87,13 +107,16 @@ V0.1 is a single, self-contained Rust binary: `argos-proxy`.
   - **stdio mode**: wraps a local MCP server process, intercepting stdin/stdout
   - **HTTP/SSE mode**: acts as a reverse proxy in front of a remote MCP server URL
 - Loads a **TOML policy file** at startup defining the capability policy for this session
-- For every incoming tool call (`tools/call` JSON-RPC request):
-  - Evaluates the call against the loaded policy
-  - **Allows** matching calls (passes through to upstream server)
-  - **Blocks** denied calls (returns a structured MCP-compliant error to the client, logs the event)
-  - **Redacts** calls matching a redaction rule (strips specified argument fields before passing through)
+- For every intercepted MCP request (`tools/call`, `resources/read`, `resources/list`,
+  `resources/subscribe`):
+  - Evaluates the request against the loaded policy
+  - **Allows** matching requests (passes through to upstream server)
+  - **Blocks** denied requests (returns a structured MCP-compliant error to the client, logs the event)
+  - **Redacts** requests matching a redaction rule (strips specified argument fields before passing through)
 - Writes every evaluation decision — allowed, blocked, or redacted — to an **append-only audit log**
-- Default posture: **deny by default** — any tool call not explicitly permitted by policy is blocked
+- Default posture: **deny by default** — any intercepted request not explicitly permitted by policy is blocked
+- Protocol messages (`initialize`, `ping`, `tools/list`) and deferred types (`prompts/*`,
+  `sampling/createMessage`) pass through unmodified with no audit entry
 - Exposes a `--dry-run` flag: log and warn on violations without blocking (for initial policy development)
 
 ### What it explicitly does NOT do in v0.1
@@ -164,8 +187,9 @@ tags = []
   "prev_hash": "sha256:abc123def456...",
   "entry_hash": "sha256:789abcdef012...",
   "session_id": "01950c2a-7e3f-7000-8000-000000000042",
+  "message_type": "tools/call",
   "decision": "blocked",
-  "tool": "run_terminal_cmd",
+  "tool_or_resource": "run_terminal_cmd",
   "arguments": { "command": "cat /etc/passwd" },
   "policy_rule_matched": "run_terminal_cmd:block",
   "reason": "Shell execution not permitted for this agent",
@@ -177,25 +201,42 @@ tags = []
 ```
 
 Fields marked `null` in v0.1: `org_id`, `tenant_id` — reserved for SaaS multi-tenancy in v1.1+.
+`message_type` is one of `"tools/call"`, `"resources/read"`, `"resources/list"`, `"resources/subscribe"`.
+`agent` is sourced from the `--agent <name>` CLI flag (defaults to `"unknown"` if omitted) — it
+identifies the session operator label, not the policy file's `[meta].agent` metadata field.
 
 ### Proxy config (CLI)
 
-```
-argos-proxy \
-  --policy ./argos.toml \
-  --log ./audit.jsonl \
-  --mode stdio \
-  --upstream "npx @modelcontextprotocol/server-filesystem /workspace" \
-  --dry-run
-```
+stdio mode — `argos-proxy` replaces the server command in the MCP client config (Claude Code,
+Roo Code, GitHub Copilot). The `--` separator triggers stdio mode; no `--mode` flag exists.
+
+Both `--policy` and `--audit-log` are required flags — the proxy refuses to start if either is
+omitted. `--agent` is optional (defaults to `"unknown"` in audit entries).
+
+stdio mode — `argos-proxy` replaces the server command in the MCP client config (Claude Code,
+Roo Code, GitHub Copilot). The `--` separator triggers stdio mode; no `--mode` flag exists.
 
 ```
 argos-proxy \
   --policy ./argos.toml \
-  --log ./audit.jsonl \
-  --mode http \
+  --audit-log ./audit.jsonl \
+  --agent code-review-agent \
+  --dry-run \
+  -- npx @modelcontextprotocol/server-filesystem /workspace
+```
+
+HTTP/SSE mode — `--upstream` triggers HTTP mode. `--bind` and `--port` default to
+`127.0.0.1:8080`.
+
+```
+argos-proxy \
+  --policy ./argos.toml \
+  --audit-log ./audit.jsonl \
+  --agent code-review-agent \
   --upstream "https://mcp.internal.example.com" \
-  --tls-cert ./cert.pem \     # accepted but not required in v0.1
+  --bind 127.0.0.1 \
+  --port 8080 \
+  --tls-cert ./cert.pem \
   --tls-key ./key.pem
 ```
 
@@ -204,7 +245,7 @@ argos-proxy \
 ## 7. Architecture overview
 
 ```
-MCP Client (Claude Desktop / Cursor / any agent)
+MCP Client (Claude Code / Roo Code / GitHub Copilot / any agent)
         |
         | stdio or HTTP/SSE
         v
@@ -241,18 +282,19 @@ MCP Client (Claude Desktop / Cursor / any agent)
 
 ## 8. Technology decisions
 
-| Decision          | Choice                       | Rationale                                                                              |
-| ----------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
-| Language          | Rust                         | Memory safety, single binary, sub-ms overhead, no CVE surface from runtime             |
-| Async runtime     | Tokio                        | De facto standard for Rust async I/O; broad ecosystem support                          |
-| Policy format     | TOML                         | Rust-native (`toml` crate), human-readable, survives DSL evolution via `version` field |
-| Audit log format  | JSONL + SHA-256 Merkle chain | Auditor-legible, tamper-evident from day one, OTel-compatible, Sigstore/Rekor-ready    |
-| Hash function     | SHA-256                      | Standard, well-audited; required for Sigstore/Rekor compatibility in v0.4              |
-| Transport support | stdio + HTTP/SSE             | Covers all current MCP clients and server deployment patterns                          |
-| Default posture   | Deny by default              | Non-negotiable for a security product; defines the brand                               |
-| Config delivery   | File + CLI flags             | No network required; works air-gapped; no attack surface                               |
-| Session ID        | UUID v4                      | Globally unique; required for distributed deployments in v1.0+                         |
-| Binary vs library | Both (bin + lib crate)       | Binary for direct use; library crate for SaaS control plane integration in v1.1+       |
+| Decision          | Choice                       | Rationale                                                                                     |
+| ----------------- | ---------------------------- | --------------------------------------------------------------------------------------------- |
+| Language          | Rust                         | Memory safety, single binary, sub-ms overhead, no CVE surface from runtime                    |
+| Async runtime     | Tokio                        | De facto standard for Rust async I/O; broad ecosystem support                                 |
+| Policy format     | TOML                         | Rust-native (`toml` crate), human-readable, survives DSL evolution via `version` field        |
+| Audit log format  | JSONL + SHA-256 Merkle chain | Auditor-legible, tamper-evident from day one, OTel-compatible, Sigstore/Rekor-ready           |
+| Hash function     | SHA-256                      | Standard, well-audited; required for Sigstore/Rekor compatibility in v0.4                     |
+| Transport support | stdio + HTTP/SSE             | Covers all current MCP clients and server deployment patterns                                 |
+| stdio framing     | Content-Length headers       | MCP/LSP wire protocol — required for compatibility with Claude Code, Roo Code, Goose, Copilot |
+| Default posture   | Deny by default              | Non-negotiable for a security product; defines the brand                                      |
+| Config delivery   | File + CLI flags             | No network required; works air-gapped; no attack surface                                      |
+| Session ID        | UUID v4                      | Globally unique; required for distributed deployments in v1.0+                                |
+| Binary vs library | Both (bin + lib crate)       | Binary for direct use; library crate for SaaS control plane integration in v1.1+              |
 
 ---
 
@@ -273,7 +315,7 @@ Argos v0.1 is done when all of the following are true:
 11. A `version` field is present and validated in all loaded policy files; unrecognised versions produce a clear error
 12. Session IDs are UUID v4, generated once per proxy invocation
 13. The `argos` crate is usable as a library (policy engine and audit writer are exposed as public APIs)
-14. A README exists with: installation steps, a working Claude Desktop integration example, and a minimal policy file
+14. A README exists with: installation steps, a working Claude Code integration example (stdio mode config), and a minimal policy file
 15. All core logic (policy evaluation, Merkle chain, request parsing) has unit tests
 16. The full stdio and HTTP proxy flows have integration tests
 
@@ -293,29 +335,24 @@ Argos v0.1 is done when all of the following are true:
 
 ## 11. Positioning statement
 
-> Argos is a Rust-based MCP security proxy for teams deploying AI agents in enterprise environments. It enforces capability policies at the transport layer — controlling exactly which tools an agent can call and under what conditions — and writes a tamper-evident audit trail of every decision. It runs entirely on your infrastructure. No data leaves your perimeter.
+> Argos is a Rust-based MCP security proxy for developers and security teams running AI agents. It enforces capability policies at the transport layer — controlling exactly which tools and resources an agent can access and under what conditions — and writes a tamper-evident audit trail of every decision. It runs entirely on your infrastructure. No data leaves your perimeter.
 
 ---
 
-## 12. Open questions for SDD to resolve
+## 12. Open questions — resolved in spec
 
-These are not answered here. They are the inputs to the formal specification process. SDD must resolve them before implementation begins.
+These questions were inputs to the formal specification process. All have been resolved in
+`specs/001-mcp-proxy-mvp/spec.md` via the SDD clarification workflow. Refer to that document
+for authoritative answers. Summaries below for reference:
 
-1. **Policy evaluation order**: when multiple rules match a tool call (e.g. a specific rule and a wildcard `*` rule both match), which takes precedence? Options: first match, most specific match, last match, explicit priority field.
-
-2. **Constraint expression semantics**: v0.1 uses simple key-value constraints (`path_prefix = "/workspace"`). What operators are required? Candidates: `prefix`, `suffix`, `contains`, `exact`, `regex`, `not`, `one_of`. What is the minimum viable set for v0.1?
-
-3. **Wildcard tool matching**: should `tool = "read_*"` be valid in v0.1 or deferred to v0.2? What glob syntax is supported?
-
-4. **Redaction semantics**: when a `redact` rule fires, which argument fields are stripped? Is the call still forwarded after redaction, or can redaction also block? Should both behaviours be expressible?
-
-5. **MCP error response format**: what is the exact JSON-RPC error object returned to the client when a call is blocked? What error code, what message format? Must not break MCP-compliant clients.
-
-6. **Audit log Merkle chain bootstrap**: the first entry has no predecessor. The chosen convention (64 zero hex chars for SHA-256) must be documented and tested. Is there a better convention?
-
-7. **Argument logging scope**: should all tool call arguments be logged verbatim, or should there be a configurable maximum size or field exclusion list? Logging raw arguments could itself be a data exposure risk in some deployments.
-
-8. **Policy validation at startup**: should argos-proxy refuse to start if the policy file contains unrecognised fields or constraint keys? Strict vs permissive parsing — what is the right default?
+1. **Policy evaluation order** → first-match-wins (top-to-bottom order in the policy file).
+2. **Constraint expression semantics** → `path_prefix` for tool argument constraints in v0.1; glob patterns (`globset` crate) for resource URI matching. Richer operators deferred to M2.
+3. **Wildcard tool matching** → literal `*` catch-all only in v0.1. Glob patterns like `read_*` deferred to M2.
+4. **Redaction semantics** → strip specified argument fields, forward the redacted call to upstream, record stripped field names in the audit entry.
+5. **MCP error response format** → JSON-RPC 2.0 error with code `-32000` (server error range) and human-readable message.
+6. **Audit log Merkle chain bootstrap** → genesis entry uses `prev_hash: "sha256:" + 64 hex zeros`.
+7. **Argument logging scope** → verbatim up to `--max-arg-bytes` (default 65536); truncation recorded in the audit entry.
+8. **Policy validation at startup** → hard error on unrecognised `version` value or unrecognised `action` type; proxy refuses to start.
 
 ---
 

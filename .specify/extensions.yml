@@ -99,6 +99,13 @@ hooks:
     description: Auto-commit after constitution update
     condition: null
   after_specify:
+  - extension: argos
+    command: argos.sync-docs
+    enabled: true
+    optional: true
+    prompt: Sync docs/ with spec changes?
+    description: Propagate spec decisions to all docs/ markdown files
+    condition: null
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -107,6 +114,13 @@ hooks:
     description: Auto-commit after specification
     condition: null
   after_clarify:
+  - extension: argos
+    command: argos.sync-docs
+    enabled: true
+    optional: true
+    prompt: Sync docs/ with spec changes?
+    description: Propagate spec decisions to all docs/ markdown files
+    condition: null
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -115,6 +129,13 @@ hooks:
     description: Auto-commit after spec clarification
     condition: null
   after_plan:
+  - extension: argos
+    command: argos.sync-docs
+    enabled: true
+    optional: true
+    prompt: Sync docs/ with spec changes?
+    description: Propagate spec decisions to all docs/ markdown files
+    condition: null
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -147,6 +168,13 @@ hooks:
     description: Auto-commit after checklist generation
     condition: null
   after_analyze:
+  - extension: argos
+    command: argos.sync-docs
+    enabled: true
+    optional: true
+    prompt: Sync docs/ with spec changes?
+    description: Propagate spec decisions to all docs/ markdown files
+    condition: null
   - extension: git
     command: speckit.git.commit
     enabled: true
