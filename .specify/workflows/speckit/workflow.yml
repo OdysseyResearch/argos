@@ -64,13 +64,9 @@ steps:
 
   - id: remediate-pre-pr
     type: gate
-    message: "Optional: run /speckit-remediate to fix issues before opening a PR (uses /speckit-analyze findings). Skip to proceed directly to PR."
-    options: [remediate, skip]
-    on_remediate:
-      command: speckit.remediate
-      integration: "{{ inputs.integration }}"
-      input:
-        args: ""
+    message: "Optional: run /speckit-remediate to fix issues before opening a PR (paste /speckit-analyze findings or run it after reviewing the analyze output). Skip to proceed directly to PR."
+    options: [remediated, skip]
+    on_remediated: continue
     on_skip: continue
 
   - id: review-implementation
@@ -87,11 +83,7 @@ steps:
 
   - id: remediate-post-review
     type: gate
-    message: "Optional: run /speckit-remediate to fix findings from the PR review. Skip to merge."
-    options: [remediate, skip]
-    on_remediate:
-      command: speckit.remediate
-      integration: "{{ inputs.integration }}"
-      input:
-        args: ""
+    message: "Optional: run /speckit-remediate to fix findings from the PR review (it auto-fetches the latest pr-review comment). Skip to merge."
+    options: [remediated, skip]
+    on_remediated: continue
     on_skip: continue
