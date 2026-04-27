@@ -56,7 +56,9 @@ This skill is the diagonal: it reads the **code** through the lens of the **spec
 
 ### 1. Initialize Review Context
 
-Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` once from repo root and parse JSON for `FEATURE_DIR`, `IMPL_PLAN`, `FEATURE_SPEC`, `TASKS`. Derive absolute paths:
+Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` once from repo root and attempt to parse JSON for `FEATURE_DIR`.
+
+**If the script succeeds**, derive full artifact paths and run all detection passes:
 
 - `SPEC` = `FEATURE_DIR/spec.md`
 - `PLAN` = `FEATURE_DIR/plan.md`
@@ -64,7 +66,14 @@ Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --inclu
 - `CONTRACTS_DIR` = `FEATURE_DIR/contracts/` (optional)
 - `CONSTITUTION` = `.specify/memory/constitution.md`
 
-Abort with an error message if any required file is missing.
+**If the script fails due to branch naming** (error message references feature branch format), enter **reduced mode**:
+
+- Load `CONSTITUTION` = `.specify/memory/constitution.md` only.
+- Skip FR coverage, SC evidence, and contract conformance passes.
+- Run constitution alignment, scope drift, and test gap passes against the diff.
+- Print at the top of the report: *"Reduced mode: non-speckit branch — FR/SC/contract passes skipped."*
+
+**If `.specify/` is missing entirely**, abort with: *"No .specify/ directory found. Is this a speckit project?"*
 
 ### 2. Detect Provider
 
