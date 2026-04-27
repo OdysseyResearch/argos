@@ -177,6 +177,7 @@ API surfaces are fully re-exported from `src/lib.rs`.
 - [x] T044 [P] Run `cargo run --example basic_policy` end-to-end and confirm it exits cleanly with a readable audit entry in the temp file (SC-009)
 - [x] T045 [P] Validate quickstart.md scenario: follow `specs/001-mcp-proxy-mvp/quickstart.md` step-by-step with a real `uvx mcp-server-filesystem` subprocess (if available) or a mock, confirm all commands work as documented
 - [x] T046 [P] Update `README.md` with a Claude Code MCP config JSON block (stdio mode, argos-proxy wrapping mcp-server-filesystem) and a minimal three-rule policy file example — satisfies §9 criterion #14 (SC-006)
+- [x] T047 [tooling] Create `.claude/skills/argos-sync-docs/SKILL.md` — developer tooling skill that propagates spec decisions to `docs/` markdown files; invoked as an extension hook after speckit specify/clarify/plan/analyze steps; not part of the proxy binary or library API
 
 ---
 
