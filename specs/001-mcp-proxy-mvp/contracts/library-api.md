@@ -10,9 +10,8 @@ downstream crates can embed them without invoking the CLI.
 ## Public modules
 
 ```
-argos::policy   — PolicyEngine, PolicyRequest, PolicyFile, PolicyRule, PolicyDecision, PolicyError
-argos::audit    — AuditWriter, AuditEntry, AuditError
-argos::types    — MessageType, DecisionLabel, PolicyAction
+argos::policy   — PolicyEngine, PolicyRequest, PolicyFile, PolicyRule, PolicyDecision, PolicyAction, PolicyError
+argos::audit    — AuditWriter, AuditEntry, AuditError, MessageType, DecisionLabel
 ```
 
 ---
@@ -101,8 +100,7 @@ Flushes the OS write buffer to disk. Call before process exit to guarantee no en
 
 ```rust
 use argos::policy::{PolicyEngine, PolicyRequest, PolicyDecision};
-use argos::audit::{AuditWriter, AuditEntry};
-use argos::types::{MessageType, DecisionLabel};
+use argos::audit::{AuditWriter, AuditEntry, MessageType, DecisionLabel};
 use std::path::Path;
 use uuid::Uuid;
 
