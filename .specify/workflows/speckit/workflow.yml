@@ -2,9 +2,9 @@ schema_version: "1.0"
 workflow:
   id: "speckit"
   name: "Full SDD Cycle"
-  version: "1.0.0"
+  version: "1.1.0"
   author: "GitHub"
-  description: "Runs specify → plan → tasks → implement with review gates"
+  description: "Runs specify → plan → tasks → implement → pr-review with review gates"
 
 requires:
   speckit_version: ">=0.7.2"
@@ -61,3 +61,15 @@ steps:
     integration: "{{ inputs.integration }}"
     input:
       args: "{{ inputs.spec }}"
+
+  - id: review-implementation
+    type: gate
+    message: "Push the branch and open a pull request before running pr-review."
+    options: [pr-opened, skip]
+    on_skip: continue
+
+  - id: pr-review
+    command: speckit.pr.review
+    integration: "{{ inputs.integration }}"
+    input:
+      args: ""
