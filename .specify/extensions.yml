@@ -66,6 +66,14 @@ hooks:
     prompt: Commit outstanding changes before analysis?
     description: Auto-commit before analysis
     condition: null
+  before_remediate:
+  - extension: git
+    command: speckit.git.commit
+    enabled: true
+    optional: true
+    prompt: Commit outstanding changes before remediation?
+    description: Auto-commit before remediation (ensures a clean baseline to diff against)
+    condition: null
   before_pr_review:
   - extension: git
     command: speckit.git.commit
@@ -145,6 +153,14 @@ hooks:
     optional: true
     prompt: Commit analysis results?
     description: Auto-commit after analysis
+    condition: null
+  after_remediate:
+  - extension: git
+    command: speckit.git.commit
+    enabled: true
+    optional: true
+    prompt: Commit any remaining changes after remediation?
+    description: Auto-commit after remediation (catches any uncommitted stragglers after per-finding commits)
     condition: null
   after_pr_review:
   - extension: git

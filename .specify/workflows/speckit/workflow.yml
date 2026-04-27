@@ -2,9 +2,9 @@ schema_version: "1.0"
 workflow:
   id: "speckit"
   name: "Full SDD Cycle"
-  version: "1.1.0"
+  version: "1.2.0"
   author: "GitHub"
-  description: "Runs specify → plan → tasks → implement → pr-review with review gates"
+  description: "Runs specify → plan → tasks → implement → remediate (opt) → pr-review → remediate (opt) with review gates"
 
 requires:
   speckit_version: ">=0.7.2"
@@ -62,6 +62,13 @@ steps:
     input:
       args: "{{ inputs.spec }}"
 
+  - id: remediate-pre-pr
+    type: gate
+    message: "Optional: run /speckit-remediate to fix issues before opening a PR (paste /speckit-analyze findings or run it after reviewing the analyze output). Skip to proceed directly to PR."
+    options: [remediated, skip]
+    on_remediated: continue
+    on_skip: continue
+
   - id: review-implementation
     type: gate
     message: "Push the branch and open a pull request before running pr-review."
@@ -73,3 +80,10 @@ steps:
     integration: "{{ inputs.integration }}"
     input:
       args: ""
+
+  - id: remediate-post-review
+    type: gate
+    message: "Optional: run /speckit-remediate to fix findings from the PR review (it auto-fetches the latest pr-review comment). Skip to merge."
+    options: [remediated, skip]
+    on_remediated: continue
+    on_skip: continue
