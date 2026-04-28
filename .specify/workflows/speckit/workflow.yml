@@ -4,7 +4,7 @@ workflow:
   name: "Full SDD Cycle"
   version: "1.3.0"
   author: "GitHub"
-  description: "Runs specify → plan → tasks → implement → remediate (opt) → pr-review → remediate (opt) → sync-docs → merge with review gates"
+  description: "Runs specify → plan → tasks → implement → remediate (opt) → pr-review → remediate (opt) → sync-docs (speckit) → merge with review gates"
 
 requires:
   speckit_version: ">=0.7.2"
@@ -89,7 +89,7 @@ steps:
     on_skip: continue
 
   - id: sync-docs
-    command: argos.sync.docs
+    command: speckit.sync.docs
     integration: "{{ inputs.integration }}"
     input:
       args: ""
