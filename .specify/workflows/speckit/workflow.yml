@@ -2,9 +2,9 @@ schema_version: "1.0"
 workflow:
   id: "speckit"
   name: "Full SDD Cycle"
-  version: "1.2.0"
+  version: "1.3.0"
   author: "GitHub"
-  description: "Runs specify → plan → tasks → implement → remediate (opt) → pr-review → remediate (opt) with review gates"
+  description: "Runs specify → plan → tasks → implement → remediate (opt) → pr-review → remediate (opt) → sync-docs → merge with review gates"
 
 requires:
   speckit_version: ">=0.7.2"
@@ -83,7 +83,20 @@ steps:
 
   - id: remediate-post-review
     type: gate
-    message: "Optional: run /speckit-remediate to fix findings from the PR review (it auto-fetches the latest pr-review comment). Skip to merge."
+    message: "Optional: run /speckit-remediate to fix findings from the PR review (it auto-fetches the latest pr-review comment). Skip to proceed."
     options: [remediated, skip]
     on_remediated: continue
+    on_skip: continue
+
+  - id: sync-docs
+    command: argos.sync.docs
+    integration: "{{ inputs.integration }}"
+    input:
+      args: ""
+
+  - id: ready-to-merge
+    type: gate
+    message: "Docs are synced. Merge the pull request when ready."
+    options: [merged, skip]
+    on_merged: continue
     on_skip: continue
