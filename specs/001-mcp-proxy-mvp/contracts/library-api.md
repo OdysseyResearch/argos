@@ -41,7 +41,7 @@ Evaluates a `PolicyRequest` against the loaded policy. Stateless — safe to cal
 concurrently from multiple threads/tasks without external locking.
 
 `PolicyRequest` is the public input type — library users construct it directly without
-any knowledge of internal wire-protocol types (`McpRequest`, `McpFrame`).
+any knowledge of internal wire-protocol types (`McpFrame`).
 
 Returns one of:
 
@@ -66,7 +66,7 @@ entries.
 ### `AuditWriter::open`
 
 ```rust
-pub fn open(
+pub async fn open(
     path: &std::path::Path,
     session_id: uuid::Uuid,
     agent: &str,
@@ -116,7 +116,7 @@ async fn main() -> anyhow::Result<()> {
         session_id,
         "my-agent",
         engine.version(),
-    )?;
+    ).await?;
 
     // Construct a policy request — no wire-protocol knowledge required
     let request = PolicyRequest::Tool {

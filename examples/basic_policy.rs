@@ -40,7 +40,7 @@ tags = []
 
     let session_id = Uuid::new_v4();
     let audit_path = policy_dir.path().join("audit.jsonl");
-    let writer = AuditWriter::open(&audit_path, session_id, "library-example", engine.version())?;
+    let writer = AuditWriter::open(&audit_path, session_id, "library-example", engine.version()).await?;
 
     let request = PolicyRequest::Tool {
         name: "read_file".to_string(),

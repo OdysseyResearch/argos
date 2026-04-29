@@ -42,7 +42,7 @@ async fn run_proxy(args: CliArgs) -> Result<(), AppError> {
     let engine = PolicyEngine::load(policy_path)?;
     let policy_version = engine.version().to_string();
     let session_id = uuid::Uuid::new_v4();
-    let writer = AuditWriter::open(audit_path, session_id, &args.agent, &policy_version)?;
+    let writer = AuditWriter::open(audit_path, session_id, &args.agent, &policy_version).await?;
 
     eprintln!(
         "argos-proxy: policy={} audit={} agent={} mode={:?} session={}",
@@ -79,9 +79,9 @@ async fn run_proxy(args: CliArgs) -> Result<(), AppError> {
         TransportMode::Http => {
             argos::transport::http::run_http_proxy(args, engine, writer.clone(), session_id, config)
                 .await?;
+            writer.flush().await?;
         }
     }
 
-    writer.flush().await?;
     Ok(())
 }
