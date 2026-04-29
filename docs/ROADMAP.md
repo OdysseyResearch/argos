@@ -16,19 +16,18 @@ For the strategic rationale behind this sequencing see
 Goal: establish Argos as the default open standard for MCP runtime security before a well-funded
 competitor does. Revenue is not the goal of this phase — community credibility is.
 
-Milestones are sequenced by persona: developers first, then agentic application users, then agent
-framework builders, then enterprise AppSec teams. Each milestone serves the previous audience well
-enough to retain them while opening the door to the next.
+Milestones are sequenced from minimum viable proxy outward: each one extends enforcement coverage,
+policy expressiveness, observability, or integrity guarantees on top of the previous.
 
-| ID | Milestone                      | Persona             | Key capability                                                                                                                                                                                                                                                          | Status         |
-| -- | ------------------------------ | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| M1 | **AI Coding Assistants**       | Developer           | stdio + HTTP/SSE proxy, TOML policy, deny-by-default, Merkle audit log, `argos-proxy verify` (audit chain integrity check). Full compatibility with all MCP-compliant AI coding assistants: Claude Code, Roo Code, GitHub Copilot agent, Cursor, Windsurf, Continue.dev | 🚧 In progress |
-| M2 | **Agentic Applications**       | Developer           | OpenClaw, Goose (Block), and other autonomous agentic apps. `argos-proxy check-policy` (policy linter), policy hot-reload, Windows support, `prompts/*` and `sampling/createMessage` enforcement, tool name glob patterns (e.g. `read_*`)                               | Planned        |
-| M3 | **Framework Ecosystem**        | Builder             | LangChain, AutoGen, OpenAI Agents SDK integration helpers and guides                                                                                                                                                                                                    | Planned        |
-| M4 | **Policy DSL**                 | Builder → AppSec    | Richer constraint expressions (`regex`, `one_of`, `contains`), rule composition, policy templates for common use cases                                                                                                                                                  | Planned        |
-| M5 | **Observability**              | Builder + AppSec    | OpenTelemetry GenAI span emission, remote log sinks (S3, syslog, OTel collector)                                                                                                                                                                                        | Planned        |
-| M6 | **Stable API** *(0.x → 1.0.0)* | AppSec / Enterprise | Sigstore/Rekor audit log anchoring, mTLS enforcement, multi-agent session management, performance benchmarks. Public interfaces declared stable                                                                                                                         | Planned        |
-| M7 | **Defence-in-depth**           | AppSec              | Structural anomaly detection + known MCP attack pattern signatures. Defence-in-depth layer — not a prevention claim                                                                                                                                                     | Planned        |
+| ID | Milestone                       | Key capability                                                                                                                                                                | Status  |
+| -- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| M1 | **Proxy core**                  | stdio + HTTP/SSE proxy, TOML policy, deny-by-default, Merkle audit log, `argos-proxy verify` (audit chain integrity check). Compatible with any MCP-compliant client          | ✅ Done |
+| M2 | **Wire coverage & operability** | `prompts/*` and `sampling/createMessage` enforcement, tool name glob patterns (e.g. `read_*`), policy hot-reload, `argos-proxy check-policy` (policy linter), Windows support | Planned |
+| M3 | **Framework adapters**          | LangChain, AutoGen, OpenAI Agents SDK integration helpers and guides                                                                                                          | Planned |
+| M4 | **Policy DSL**                  | Richer constraint expressions (`regex`, `one_of`, `contains`), rule composition, policy templates for common use cases                                                        | Planned |
+| M5 | **Observability**               | OpenTelemetry GenAI span emission, remote log sinks (S3, syslog, OTel collector)                                                                                              | Planned |
+| M6 | **Stable API** *(0.x → 1.0.0)*  | Sigstore/Rekor audit log anchoring, mTLS enforcement, multi-agent session management, performance benchmarks. Public interfaces declared stable                               | Planned |
+| M7 | **Defence-in-depth**            | Structural anomaly detection + known MCP attack pattern signatures. Defence-in-depth layer — not a prevention claim                                                           | Planned |
 
 ---
 
