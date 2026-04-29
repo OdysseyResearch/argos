@@ -1,9 +1,8 @@
-use std::fs::OpenOptions;
-use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use sha2::{Digest, Sha256};
+use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
@@ -14,7 +13,7 @@ pub const GENESIS_PREV_HASH: &str =
     "sha256:0000000000000000000000000000000000000000000000000000000000000000";
 
 pub(crate) struct AuditWriterInner {
-    file: BufWriter<std::fs::File>,
+    file: BufWriter<tokio::fs::File>,
     pub(crate) sequence: u64,
     pub(crate) prev_hash: String,
 }
@@ -36,16 +35,17 @@ pub struct AuditWriter {
 
 impl AuditWriter {
     /// Open (or create) the audit log file at `path` in append mode (FR-013).
-    pub fn open(
+    pub async fn open(
         path: &Path,
         session_id: Uuid,
         agent: &str,
         policy_version: &str,
     ) -> Result<Self, AuditError> {
-        let file = OpenOptions::new()
+        let file = tokio::fs::OpenOptions::new()
             .create(true)
             .append(true)
             .open(path)
+            .await
             .map_err(|_| AuditError::NotWritable(path.to_path_buf()))?;
 
         Ok(Self {
@@ -80,8 +80,8 @@ impl AuditWriter {
         entry.entry_hash = entry_hash.clone();
 
         let line = serde_json::to_string(&entry)?;
-        guard.file.write_all(line.as_bytes())?;
-        guard.file.write_all(b"\n")?;
+        guard.file.write_all(line.as_bytes()).await?;
+        guard.file.write_all(b"\n").await?;
 
         guard.prev_hash = entry_hash;
         Ok(())
@@ -90,7 +90,7 @@ impl AuditWriter {
     /// Flush any buffered audit data to disk (FR-018c).
     pub async fn flush(&self) -> Result<(), AuditError> {
         let mut guard = self.inner.lock().await;
-        guard.file.flush()?;
+        guard.file.flush().await?;
         Ok(())
     }
 

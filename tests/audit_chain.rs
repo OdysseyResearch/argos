@@ -44,7 +44,7 @@ const GENESIS: &str = "sha256:00000000000000000000000000000000000000000000000000
 #[tokio::test]
 async fn first_entry_uses_genesis_prev_hash() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").await.unwrap();
     writer
         .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
         .await
@@ -62,7 +62,7 @@ async fn first_entry_uses_genesis_prev_hash() {
 #[tokio::test]
 async fn entry_hash_is_reproducible_with_blank_convention() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").await.unwrap();
     writer
         .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
         .await
@@ -78,7 +78,7 @@ async fn entry_hash_is_reproducible_with_blank_convention() {
 #[tokio::test]
 async fn sequential_entries_chain_correctly() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").await.unwrap();
 
     for _ in 0..5 {
         writer
@@ -108,7 +108,7 @@ async fn sequential_entries_chain_correctly() {
 #[tokio::test]
 async fn verify_subcommand_accepts_intact_log() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").await.unwrap();
     for _ in 0..5 {
         writer
             .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
@@ -123,7 +123,7 @@ async fn verify_subcommand_accepts_intact_log() {
 #[tokio::test]
 async fn verify_subcommand_detects_modified_entry() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").await.unwrap();
     for _ in 0..5 {
         writer
             .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
@@ -150,7 +150,7 @@ async fn verify_subcommand_detects_modified_entry() {
 #[tokio::test]
 async fn verify_subcommand_detects_truncated_log() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").await.unwrap();
     for _ in 0..3 {
         writer
             .write(sample_entry(MessageType::ToolsCall, DecisionLabel::Allowed))
@@ -173,7 +173,7 @@ async fn verify_subcommand_detects_truncated_log() {
 #[tokio::test]
 async fn tampering_with_an_entry_breaks_the_chain() {
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").unwrap();
+    let writer = AuditWriter::open(tmp.path(), Uuid::nil(), "test", "0.1").await.unwrap();
 
     for _ in 0..3 {
         writer
