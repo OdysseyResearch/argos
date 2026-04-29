@@ -66,7 +66,7 @@ entries.
 ### `AuditWriter::open`
 
 ```rust
-pub fn open(
+pub async fn open(
     path: &std::path::Path,
     session_id: uuid::Uuid,
     agent: &str,
@@ -116,7 +116,7 @@ async fn main() -> anyhow::Result<()> {
         session_id,
         "my-agent",
         engine.version(),
-    )?;
+    ).await?;
 
     // Construct a policy request — no wire-protocol knowledge required
     let request = PolicyRequest::Tool {
