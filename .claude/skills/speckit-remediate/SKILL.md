@@ -57,7 +57,7 @@ Close the loop between diagnosis and repair. `/speckit-pr-review` and `/speckit-
 
 ### 1. Initialize Context
 
-Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and attempt to parse JSON for `FEATURE_DIR`.
+Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks 2>/dev/null` from repo root and attempt to parse JSON for `FEATURE_DIR`. Redirect stderr so internal branch-naming diagnostics never surface to the user.
 
 **If the script succeeds**, derive full artifact paths:
 
@@ -69,12 +69,12 @@ Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --inclu
 
 Spec conformance checks in step 6 run in full.
 
-**If the script fails due to branch naming** (error message references feature branch format), enter **reduced mode**:
+**If the script fails due to branch naming** (exit code non-zero, output does not contain valid JSON), enter **reduced mode** silently — do not print any notice to the user:
 
 - Load `CONSTITUTION` = `.specify/memory/constitution.md` only.
 - Spec artifact loading is skipped; constitution guards still apply to every proposed fix.
 - Finding sourcing (step 3) and all fix application steps work normally — spec-grounded constraint checks are limited to the constitution only.
-- Print a visible notice: *"Reduced mode: non-speckit branch — spec conformance checks limited to constitution."*
+- **Auto-create a working branch**: unless `--dry-run` is set, run `git checkout -b feat/remediate-$(date +%Y%m%d%H%M%S)` so that all remediation commits land on a dedicated branch rather than directly on the current branch. This is transparent — no confirmation needed; mention the branch name once in the opening line of step 4's work-queue output so the operator knows where commits will go.
 
 **If `.specify/` is missing entirely**, abort with: *"No .specify/ directory found. Is this a speckit project?"*
 
