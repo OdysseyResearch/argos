@@ -79,9 +79,9 @@ async fn run_proxy(args: CliArgs) -> Result<(), AppError> {
         TransportMode::Http => {
             argos::transport::http::run_http_proxy(args, engine, writer.clone(), session_id, config)
                 .await?;
+            writer.flush().await?;
         }
     }
 
-    writer.flush().await?;
     Ok(())
 }
