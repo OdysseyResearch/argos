@@ -41,7 +41,7 @@ Evaluates a `PolicyRequest` against the loaded policy. Stateless — safe to cal
 concurrently from multiple threads/tasks without external locking.
 
 `PolicyRequest` is the public input type — library users construct it directly without
-any knowledge of internal wire-protocol types (`McpRequest`, `McpFrame`).
+any knowledge of internal wire-protocol types (`McpFrame`).
 
 Returns one of:
 
