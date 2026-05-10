@@ -14,4 +14,4 @@ dev = [
 ]
 
 [tool.uv.sources]
-specify-cli = { git = "https://github.com/github/spec-kit.git", rev = "main" }
+specify-cli = { git = "https://github.com/github/spec-kit.git", rev = "688ca1b3c51046498274de80752db2dce11ec1c7" }

@@ -38,7 +38,7 @@ dev = [
 dev = [
     { name = "commitizen", specifier = ">=4.0.0,<5.0.0" },
     { name = "pre-commit", specifier = ">=4.0.0,<5.0.0" },
-    { name = "specify-cli", git = "https://github.com/github/spec-kit.git?rev=main" },
+    { name = "specify-cli", git = "https://github.com/github/spec-kit.git?rev=688ca1b3c51046498274de80752db2dce11ec1c7" },
 ]
 
 [[package]]
@@ -461,7 +461,7 @@ wheels = [
 [[package]]
 name = "specify-cli"
 version = "0.8.8.dev0"
-source = { git = "https://github.com/github/spec-kit.git?rev=main#688ca1b3c51046498274de80752db2dce11ec1c7" }
+source = { git = "https://github.com/github/spec-kit.git?rev=688ca1b3c51046498274de80752db2dce11ec1c7#688ca1b3c51046498274de80752db2dce11ec1c7" }
 dependencies = [
     { name = "click" },
     { name = "json5" },
