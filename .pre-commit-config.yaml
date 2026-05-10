@@ -20,3 +20,11 @@ repos:
         entry: scripts/check-sensitive-data.sh
         language: script
         stages: [pre-commit]
+
+      - id: sync-extension-registry
+        name: Sync .specify/extensions/.registry manifest_hash
+        entry: scripts/sync-extension-registry.py
+        language: script
+        files: ^\.specify/extensions/[^/]+/extension\.yml$
+        pass_filenames: true
+        stages: [pre-commit]

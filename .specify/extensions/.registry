@@ -22,7 +22,7 @@
     "argos": {
       "version": "1.0.0",
       "source": "local",
-      "manifest_hash": "sha256:310a2929c08ac97afd8ae880adc2865a954d8b5e771f13af08deb6278d994fcf",
+      "manifest_hash": "sha256:01fc89ef7fe2d429f733354d9671e2a8990a464cb5e6f704b0d54efccc49cfae",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
