@@ -75,7 +75,7 @@ def main(args: list[str]) -> int:
     if not updates:
         return 0
 
-    REGISTRY_PATH.write_text(json.dumps(registry, indent=2) + "\n")
+    REGISTRY_PATH.write_text(json.dumps(registry, indent=2))
 
     print(f"Updated {REGISTRY_PATH}:")
     for ext_id, old, new in updates:
