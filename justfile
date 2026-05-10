@@ -42,5 +42,9 @@ build:
 check-extensions:
     uv run python3 scripts/sync-extension-registry.py --verify
 
-# Full local CI pass: format, lint, extension drift, test
-ci: fmt lint check-extensions test
+# Run Python unit tests under tests/python/
+test-scripts:
+    uv run pytest tests/python -v
+
+# Full local CI pass: format, lint, extension drift, script tests, Rust tests
+ci: fmt lint check-extensions test-scripts test
