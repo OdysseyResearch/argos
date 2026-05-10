@@ -1,14 +1,15 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.2.0 → 1.3.0 (cumulative: PATCH 1.2.1 merge-strategy rule + MINOR 1.3.0 no-PII rule)
+Version change: 1.3.0 → 1.3.1 (PATCH — clarifies branch-naming convention for
+infrastructure/tooling work that falls outside the SDD feature flow)
 
 Sections modified:
-  - Development Workflow — added rule requiring true merge commits for PRs; squash and
-    rebase-only merges are prohibited to preserve non-linear commit history (1.2.1)
-  - Development Workflow — expanded sensitive-data scan rule to explicitly prohibit PII
-    (home directory paths, emails, real names, usernames) in committed files; clarified
-    that the pre-commit hook's LLM prompt is the authoritative definition (1.3.0)
+  - Development Workflow — clarified that the `001-feature-name` branch convention
+    applies to product feature implementations driven by SDD; infrastructure and
+    tooling changes (CI, build scripts, dev dependencies, spec-kit extensions)
+    may use descriptive `feat/<slug>` branch names since they do not flow through
+    /speckit-specify → /speckit-plan → /speckit-tasks → /speckit-implement.
 
 Templates updated:
   ✅ .specify/templates/plan-template.md — no changes required
@@ -19,6 +20,10 @@ Templates updated:
 Deferred items: none
 
 ---
+
+Previous amendment (1.2.0 → 1.3.0): added rule requiring true merge commits for PRs
+(squash and rebase-only prohibited); expanded sensitive-data scan rule to explicitly
+prohibit PII in committed files.
 
 Previous amendment (1.1.0 → 1.2.0): license changed from Apache 2.0 to AGPL-3.0,
 dual commercial license added to Principle III rationale; Principle VII added.
@@ -157,7 +162,14 @@ OS-level integration — the library crate requirement already supports this tra
 
 - All features follow the SDD process: `/speckit-specify` → `/speckit-clarify` → `/speckit-plan`
   → `/speckit-tasks` → `/speckit-implement`.
-- Features begin on a dedicated branch created with `/speckit-git-feature`.
+- Product features begin on a dedicated branch created with `/speckit-git-feature`,
+  which produces names like `001-feature-name`. This convention applies to work
+  that flows through the SDD process (`/speckit-specify` → `/speckit-plan` →
+  `/speckit-tasks` → `/speckit-implement`). Infrastructure and tooling changes
+  that do not produce a feature spec — for example CI configuration, build
+  scripts, dev dependencies, or spec-kit extensions themselves — may use
+  descriptive `feat/<slug>` (or `chore/<slug>`, `fix/<slug>`) branch names
+  instead, since `/speckit-git-feature` is intended for SDD feature work.
 - All commits MUST follow Conventional Commits, enforced by the commitizen pre-commit hook.
 - All commits are scanned for sensitive data by the Claude pre-commit hook before merge.
   This project is developed in public. No personally identifiable information (PII) may appear
@@ -189,4 +201,4 @@ Use `CLAUDE.md` for runtime development guidance (read by the AI assistant on ev
 Use `docs/product/` for product strategy and vision documents.
 Use `docs/ROADMAP.md` for milestone sequencing and current status.
 
-**Version**: 1.3.0 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-04-27
+**Version**: 1.3.1 | **Ratified**: 2026-04-23 | **Last Amended**: 2026-05-10
