@@ -7,7 +7,7 @@ extension:
   description: "Provider-agnostic commands that close the spec→code→review→remediate loop: docs sync, spec-grounded PR review, and finding-anchored remediation."
   author: Odyssey LLC
   repository: https://github.com/OdysseyResearch/argos
-  license: MIT
+  license: AGPL-3.0
 
 requires:
   speckit_version: ">=0.7.0"
