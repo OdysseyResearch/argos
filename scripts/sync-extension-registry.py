@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
-"""Pre-commit hook: keep .specify/extensions/.registry's manifest_hash in sync
-with the actual SHA-256 of each .specify/extensions/<id>/extension.yml.
+"""Keep .specify/extensions/.registry's manifest_hash in sync with the actual
+SHA-256 of each .specify/extensions/<id>/extension.yml.
 
 Why: spec-kit only updates manifest_hash during `specify extension add --dev`,
 which has a destructive source==dest bug for in-tree extensions. We edit
-manifests in place, so the registry would otherwise drift silently. This hook
-recomputes the hash on every commit that touches an extension manifest and
-writes it back to .registry.
+manifests in place, so the registry would otherwise drift silently.
 
-Behavior:
+Two modes:
+
+Pre-commit hook (default — paths passed as args):
   - If no staged extension.yml files: no-op, exit 0.
   - If the recorded hash already matches: no-op, exit 0.
   - If the hash drifted: update .registry and exit 1 with a "git add" prompt.
     Pre-commit standard pattern — user re-stages and re-commits.
+
+Verify mode (--verify):
+  - Walks every .specify/extensions/<id>/extension.yml and compares against
+    the registry. Read-only — never modifies files.
+  - Reports: hash mismatches, extensions on disk missing from the registry,
+    and extensions in the registry missing from disk.
+  - Exits 0 only if everything is consistent. For use in `just ci` and CI.
 """
 
 from __future__ import annotations
@@ -23,6 +30,7 @@ import sys
 from pathlib import Path
 
 REGISTRY_PATH = Path(".specify/extensions/.registry")
+EXTENSIONS_ROOT = Path(".specify/extensions")
 EXTENSIONS_PREFIX = (".specify", "extensions")
 
 
@@ -39,7 +47,55 @@ def _is_extension_manifest(path: Path) -> bool:
     )
 
 
+def _verify_all() -> int:
+    if not REGISTRY_PATH.exists():
+        print(f"error: {REGISTRY_PATH} missing", file=sys.stderr)
+        return 1
+
+    registry = json.loads(REGISTRY_PATH.read_text())
+    registered = set(registry.get("extensions", {}).keys())
+    on_disk = {p.parent.name for p in EXTENSIONS_ROOT.glob("*/extension.yml")}
+
+    errors: list[str] = []
+
+    for ext_id in sorted(on_disk - registered):
+        errors.append(f"  {ext_id}: extension.yml on disk but not in registry")
+
+    for ext_id in sorted(registered - on_disk):
+        errors.append(f"  {ext_id}: registered but extension.yml missing on disk")
+
+    for ext_id in sorted(registered & on_disk):
+        manifest_path = EXTENSIONS_ROOT / ext_id / "extension.yml"
+        actual = _compute_hash(manifest_path)
+        recorded = registry["extensions"][ext_id].get("manifest_hash", "")
+        if actual != recorded:
+            errors.append(
+                f"  {ext_id}: hash mismatch "
+                f"(recorded {recorded or '(missing)'}, actual {actual})"
+            )
+
+    if errors:
+        print("Extension registry verification failed:", file=sys.stderr)
+        for e in errors:
+            print(e, file=sys.stderr)
+        print(
+            "\nFix: stage the affected extension.yml files and commit — "
+            "the pre-commit hook will rewrite .registry.",
+            file=sys.stderr,
+        )
+        return 1
+
+    print(f"OK: {len(registered)} extension(s) in sync with registry.")
+    return 0
+
+
 def main(args: list[str]) -> int:
+    if args and args[0] == "--verify":
+        if len(args) > 1:
+            print("usage: sync-extension-registry.py [--verify | <paths>...]", file=sys.stderr)
+            return 2
+        return _verify_all()
+
     manifests = [Path(p) for p in args if _is_extension_manifest(Path(p))]
     if not manifests:
         return 0

@@ -38,5 +38,9 @@ test:
 build:
     cargo build --release
 
-# Full local CI pass: format, lint, test
-ci: fmt lint test
+# Verify spec-kit extension registry matches manifests on disk
+check-extensions:
+    uv run python3 scripts/sync-extension-registry.py --verify
+
+# Full local CI pass: format, lint, extension drift, test
+ci: fmt lint check-extensions test
