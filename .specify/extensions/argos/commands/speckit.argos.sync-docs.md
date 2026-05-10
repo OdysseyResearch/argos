@@ -1,13 +1,5 @@
 ---
-name: "speckit-sync-docs"
-description: "Propagate spec changes to all documents under docs/ to keep them in sync with the current feature spec. Run after any speckit skill that modifies the spec."
-argument-hint: "Optional: focus hint (e.g. 'cli interface changed')"
-compatibility: "Requires spec-kit project structure with .specify/ directory"
-metadata:
-  author: "Odyssey LLC"
-  source: ".claude/skills/speckit-sync-docs/SKILL.md"
-user-invocable: true
-disable-model-invocation: false
+description: "Propagate spec changes to all docs/ markdown and README.md to keep them in sync with the active feature spec."
 ---
 
 ## User Input

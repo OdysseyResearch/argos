@@ -1,0 +1,57 @@
+schema_version: "1.0"
+
+extension:
+  id: argos
+  name: "Argos Spec-Grounded Workflow"
+  version: "1.0.0"
+  description: "Provider-agnostic commands that close the spec→code→review→remediate loop: docs sync, spec-grounded PR review, and finding-anchored remediation."
+  author: Odyssey LLC
+  repository: https://github.com/OdysseyResearch/argos
+  license: MIT
+
+requires:
+  speckit_version: ">=0.7.0"
+  tools:
+    - name: git
+      required: true
+
+provides:
+  commands:
+    - name: speckit.argos.sync-docs
+      file: commands/speckit.argos.sync-docs.md
+      description: "Propagate spec changes to all docs/ markdown and README.md to keep them in sync with the active feature spec."
+    - name: speckit.argos.pr-review
+      file: commands/speckit.argos.pr-review.md
+      description: "Spec-grounded review of an open PR/MR: reads spec/plan/tasks/contracts/constitution and the branch diff, then posts a structured report via the detected git provider."
+    - name: speckit.argos.remediate
+      file: commands/speckit.argos.remediate.md
+      description: "Finding-anchored remediation: consumes findings from pr-review or analyze, applies one fix per finding (one commit per finding), then re-runs pr-review to confirm resolution."
+
+hooks:
+  after_specify:
+    command: speckit.argos.sync-docs
+    optional: true
+    prompt: "Sync docs/ with spec changes?"
+    description: "Propagate spec decisions to all docs/ markdown files"
+  after_clarify:
+    command: speckit.argos.sync-docs
+    optional: true
+    prompt: "Sync docs/ with spec changes?"
+    description: "Propagate spec decisions to all docs/ markdown files"
+  after_plan:
+    command: speckit.argos.sync-docs
+    optional: true
+    prompt: "Sync docs/ with spec changes?"
+    description: "Propagate spec decisions to all docs/ markdown files"
+  after_analyze:
+    command: speckit.argos.sync-docs
+    optional: true
+    prompt: "Sync docs/ with spec changes?"
+    description: "Propagate spec decisions to all docs/ markdown files"
+
+tags:
+  - "spec-grounded"
+  - "review"
+  - "remediation"
+  - "docs-sync"
+  - "workflow"

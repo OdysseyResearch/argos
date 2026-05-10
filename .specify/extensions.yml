@@ -72,7 +72,8 @@ hooks:
     enabled: true
     optional: true
     prompt: Commit outstanding changes before remediation?
-    description: Auto-commit before remediation (ensures a clean baseline to diff against)
+    description: Auto-commit before remediation (ensures a clean baseline to diff
+      against)
     condition: null
   before_pr_review:
   - extension: git
@@ -100,7 +101,7 @@ hooks:
     condition: null
   after_specify:
   - extension: argos
-    command: argos.sync-docs
+    command: speckit.argos.sync-docs
     enabled: true
     optional: true
     prompt: Sync docs/ with spec changes?
@@ -115,7 +116,7 @@ hooks:
     condition: null
   after_clarify:
   - extension: argos
-    command: argos.sync-docs
+    command: speckit.argos.sync-docs
     enabled: true
     optional: true
     prompt: Sync docs/ with spec changes?
@@ -130,7 +131,7 @@ hooks:
     condition: null
   after_plan:
   - extension: argos
-    command: argos.sync-docs
+    command: speckit.argos.sync-docs
     enabled: true
     optional: true
     prompt: Sync docs/ with spec changes?
@@ -169,7 +170,7 @@ hooks:
     condition: null
   after_analyze:
   - extension: argos
-    command: argos.sync-docs
+    command: speckit.argos.sync-docs
     enabled: true
     optional: true
     prompt: Sync docs/ with spec changes?
@@ -188,7 +189,8 @@ hooks:
     enabled: true
     optional: true
     prompt: Commit any remaining changes after remediation?
-    description: Auto-commit after remediation (catches any uncommitted stragglers after per-finding commits)
+    description: Auto-commit after remediation (catches any uncommitted stragglers
+      after per-finding commits)
     condition: null
   after_pr_review:
   - extension: git
@@ -196,7 +198,8 @@ hooks:
     enabled: true
     optional: true
     prompt: Commit any local changes after PR review?
-    description: Auto-commit after PR review (no-op if review is read-only and made no local changes)
+    description: Auto-commit after PR review (no-op if review is read-only and made
+      no local changes)
     condition: null
   after_taskstoissues:
   - extension: git
