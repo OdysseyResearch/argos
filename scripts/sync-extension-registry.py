@@ -57,11 +57,16 @@ def _verify_all() -> int:
     on_disk = {p.parent.name for p in EXTENSIONS_ROOT.glob("*/extension.yml")}
 
     errors: list[str] = []
+    has_unregistered = False
+    has_missing_on_disk = False
+    has_hash_mismatch = False
 
     for ext_id in sorted(on_disk - registered):
+        has_unregistered = True
         errors.append(f"  {ext_id}: extension.yml on disk but not in registry")
 
     for ext_id in sorted(registered - on_disk):
+        has_missing_on_disk = True
         errors.append(f"  {ext_id}: registered but extension.yml missing on disk")
 
     for ext_id in sorted(registered & on_disk):
@@ -69,6 +74,7 @@ def _verify_all() -> int:
         actual = _compute_hash(manifest_path)
         recorded = registry["extensions"][ext_id].get("manifest_hash", "")
         if actual != recorded:
+            has_hash_mismatch = True
             errors.append(
                 f"  {ext_id}: hash mismatch "
                 f"(recorded {recorded or '(missing)'}, actual {actual})"
@@ -78,11 +84,27 @@ def _verify_all() -> int:
         print("Extension registry verification failed:", file=sys.stderr)
         for e in errors:
             print(e, file=sys.stderr)
-        print(
-            "\nFix: stage the affected extension.yml files and commit — "
-            "the pre-commit hook will rewrite .registry.",
-            file=sys.stderr,
-        )
+        print("\nFix:", file=sys.stderr)
+        if has_hash_mismatch:
+            print(
+                "  - Hash mismatch: stage the affected extension.yml files and "
+                "commit — the pre-commit hook will rewrite .registry.",
+                file=sys.stderr,
+            )
+        if has_unregistered:
+            print(
+                "  - On disk but not registered: add via "
+                "`specify extension add --dev <id>` or remove the directory. "
+                "The pre-commit hook does NOT auto-register new extensions.",
+                file=sys.stderr,
+            )
+        if has_missing_on_disk:
+            print(
+                "  - Registered but missing on disk: restore the extension.yml "
+                "file, or manually remove the entry from "
+                ".specify/extensions/.registry.",
+                file=sys.stderr,
+            )
         return 1
 
     print(f"OK: {len(registered)} extension(s) in sync with registry.")
