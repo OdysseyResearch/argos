@@ -8,3 +8,12 @@ __pycache__/
 
 # Env
 .env
+
+# Spec Kit extensions (per EXTENSION-USER-GUIDE Best Practices §1).
+# .registry is intentionally NOT ignored: spec-kit's `extension add --dev`
+# wipes its source dir before copying (source==dest rmtree), so a fresh
+# clone can't reinstall an in-tree extension. Tracking .registry lets the
+# CLI recognize bundled extensions without a re-install step.
+.specify/extensions/.cache/
+.specify/extensions/.backup/
+.specify/extensions/*/*.local.yml

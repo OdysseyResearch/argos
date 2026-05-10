@@ -12,3 +12,6 @@ dev = [
     "pre-commit>=4.0.0,<5.0.0",
     "commitizen>=4.0.0,<5.0.0",
 ]
+
+[tool.uv.sources]
+specify-cli = { git = "https://github.com/github/spec-kit.git", rev = "688ca1b3c51046498274de80752db2dce11ec1c7" }

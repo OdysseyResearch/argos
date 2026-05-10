@@ -64,7 +64,7 @@ steps:
 
   - id: remediate-pre-pr
     type: gate
-    message: "Optional: run /speckit-remediate to fix issues before opening a PR (paste /speckit-analyze findings or run it after reviewing the analyze output). Skip to proceed directly to PR."
+    message: "Optional: run /speckit-argos-remediate to fix issues before opening a PR (paste /speckit-analyze findings or run it after reviewing the analyze output). Skip to proceed directly to PR."
     options: [remediated, skip]
     on_remediated: continue
     on_skip: continue
@@ -76,20 +76,20 @@ steps:
     on_skip: continue
 
   - id: pr-review
-    command: speckit.pr.review
+    command: speckit.argos.pr-review
     integration: "{{ inputs.integration }}"
     input:
       args: ""
 
   - id: remediate-post-review
     type: gate
-    message: "Optional: run /speckit-remediate to fix findings from the PR review (it auto-fetches the latest pr-review comment). Skip to proceed."
+    message: "Optional: run /speckit-argos-remediate to fix findings from the PR review (it auto-fetches the latest pr-review comment). Skip to proceed."
     options: [remediated, skip]
     on_remediated: continue
     on_skip: continue
 
   - id: sync-docs
-    command: speckit.sync.docs
+    command: speckit.argos.sync-docs
     integration: "{{ inputs.integration }}"
     input:
       args: ""
